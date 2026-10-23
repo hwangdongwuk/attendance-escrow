@@ -1,0 +1,21 @@
+{
+  "name": "attendance-escrow",
+  "version": "1.0.0",
+  "description": "출석 보증금 에스크로 (Sepolia + Hardhat + HTML/ethers.js + S3)",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
+    "verify": "hardhat verify --network sepolia"
+  },
+  "author": "hwangdongwuk",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "dotenv": "^18.0.9",
+    "hardhat": "^2.29.1"
+  },
+  "private": true
+}

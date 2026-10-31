@@ -1,3 +1,522 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>출석 보증금 에스크로</title></head>
-<body><h1>출석 보증금 에스크로</h1><p>프론트 자리표시. 화면시안 v0.2 기준으로 구현 예정.</p></body></html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>출석 보증금 에스크로</title>
+<style>
+  :root{
+    --bg:#EEF1EE; --card:#FFFFFF; --ink:#17201B; --sub:#5F6B64; --line:#D9DED9;
+    --accent:#1F5A45; --accent-ink:#FFFFFF; --soft:#E4EFE9; --warn:#9A5B00; --warn-bg:#FFF4E0;
+    --bad:#9B2C2C; --bad-bg:#FBE9E9; --ok:#1F5A45; --ok-bg:#E4EFE9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:15px;line-height:1.45}
+  .app{max-width:440px;margin:0 auto;padding:12px 12px 80px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px}
+  header h1{font-size:17px;margin:0;font-weight:700}
+  header .net{font-size:12px;color:var(--sub)}
+  .wallet{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+  .wallet .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .wallet select,.wallet button{font-size:13px}
+  .addr{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--sub)}
+  .tabs{display:flex;gap:4px;margin:6px 0 10px;overflow-x:auto}
+  .tabs button{flex:1;min-width:56px;padding:8px 4px;border:1px solid var(--line);background:var(--card);border-radius:10px;font-size:13px;color:var(--sub);cursor:pointer}
+  .tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+  .card h2{font-size:14px;margin:0 0 8px;color:var(--sub);font-weight:600}
+  .big{font-size:26px;font-weight:700;letter-spacing:-.5px}
+  .kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv b{font-weight:600}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--soft);color:var(--accent)}
+  .badge.warn{background:var(--warn-bg);color:var(--warn)}
+  .badge.bad{background:var(--bad-bg);color:var(--bad)}
+  .badge.ok{background:var(--ok-bg);color:var(--ok)}
+  button.pri{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
+  button.sec{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-size:14px;cursor:pointer;margin-top:8px}
+  button.sm{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;cursor:pointer}
+  button.sm.pri{width:auto;margin:0;padding:6px 12px;font-size:13px}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .list{margin:0;padding:0;list-style:none}
+  .list li{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);gap:8px}
+  .list li:last-child{border-bottom:0}
+  .list .who{font-size:14px}
+  .list .who small{display:block;color:var(--sub);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px}
+  .hint{font-size:12px;color:var(--sub);margin-top:6px}
+  .msg{padding:10px 12px;border-radius:10px;font-size:13px;margin:8px 0;display:none;white-space:pre-wrap}
+  .msg.err{display:block;background:var(--bad-bg);color:var(--bad)}
+  .msg.ok{display:block;background:var(--ok-bg);color:var(--ok)}
+  .msg.info{display:block;background:var(--warn-bg);color:var(--warn)}
+  input[type=file],input[type=text],input[type=number],select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+  .progress{height:8px;background:var(--soft);border-radius:999px;overflow:hidden;margin:6px 0}
+  .progress i{display:block;height:100%;background:var(--accent)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all}
+  .log{font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;max-height:360px;overflow:auto;color:var(--sub)}
+  .demo{border:1px dashed var(--warn);background:var(--warn-bg)}
+  .demo .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--sub);font-weight:600;font-size:12px}
+  td.r,th.r{text-align:right}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>이더리움 부트캠프 스터디</h1>
+    <span class="net" id="netLabel">미연결</span>
+  </header>
+
+  <div class="wallet">
+    <div class="row">
+      <select id="mode">
+        <option value="metamask">MetaMask 지갑</option>
+        <option value="demo">로컬 데모 (Hardhat 계정)</option>
+      </select>
+      <select id="demoAccount" style="display:none"></select>
+      <button class="sm pri" id="btnConnect">연결</button>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <span class="addr" id="me">-</span>
+      <span class="badge" id="roleBadge" style="display:none"></span>
+      <span style="margin-left:auto;font-size:13px"><b id="sdtBal">-</b> SDT</span>
+    </div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="tabs">
+    <button data-tab="home" class="on">홈</button>
+    <button data-tab="deposit">예치</button>
+    <button data-tab="proof">증빙</button>
+    <button data-tab="attest">확인</button>
+    <button data-tab="settle">정산</button>
+    <button data-tab="log">로그</button>
+  </div>
+
+  <!-- ① 홈 -->
+  <section id="tab-home">
+    <div class="card">
+      <h2>내 스터디</h2>
+      <div class="kv"><span>상태</span><span class="badge" id="stateBadge">-</span></div>
+      <div class="kv"><span>남은 보증금(잠김)</span><b id="locked">-</b></div>
+      <div class="kv"><span>인출 가능</span><b id="withdrawable">-</b></div>
+      <div class="kv"><span>회차 진행</span><b id="roundProgress">-</b></div>
+      <div class="progress"><i id="roundBar" style="width:0%"></i></div>
+      <div class="kv"><span>출석 횟수</span><b id="attendCount">-</b></div>
+      <div class="kv"><span>보유 출석 SBT</span><b id="sbtCount">-</b></div>
+      <button class="pri" id="btnWithdraw">인출하기</button>
+    </div>
+    <div class="card">
+      <h2>이번 주</h2>
+      <div class="big" id="moduleName">-</div>
+      <div class="kv"><span>단계</span><span class="badge" id="phaseBadge">-</span></div>
+      <div class="kv"><span>증빙 제출 마감</span><b id="dlProof">-</b></div>
+      <div class="kv"><span>지각 제출 마감</span><b id="dlLate">-</b></div>
+      <div class="kv"><span>상호 확인 마감</span><b id="dlAttest">-</b></div>
+      <div class="hint" id="chainTime"></div>
+    </div>
+  </section>
+
+  <!-- ② 예치 -->
+  <section id="tab-deposit" style="display:none">
+    <div class="card">
+      <h2>보증금 예치</h2>
+      <div class="big" id="depositTotal">-</div>
+      <div class="hint" id="depositDesc">-</div>
+      <div class="kv"><span>예치 현황</span><b id="depositCount">-</b></div>
+      <ul class="list" id="depositList"></ul>
+      <div class="kv"><span>예치 마감</span><b id="dlDeposit">-</b></div>
+      <div class="grid2">
+        <button class="sec" id="btnApprove">1. 승인(approve)</button>
+        <button class="sec" id="btnDeposit">2. 예치(deposit)</button>
+      </div>
+      <div class="hint">예치는 서명 2회가 필요합니다. 먼저 SDT 사용을 승인한 뒤 예치합니다.</div>
+      <button class="sec" id="btnFaucet">테스트 SDT 받기 (100,000 SDT)</button>
+      <button class="sec" id="btnCancel">예치 기한 경과, 스터디 취소·환불</button>
+    </div>
+  </section>
+
+  <!-- ③ 증빙 제출 -->
+  <section id="tab-proof" style="display:none">
+    <div class="card">
+      <h2>학습 증빙 제출</h2>
+      <div class="big" id="proofModule">-</div>
+      <div class="kv"><span>내 증빙</span><span class="badge" id="myProofBadge">-</span></div>
+      <div class="kv"><span>받은 확인</span><b id="myAttestCount">-</b></div>
+      <div class="hint">진도 100% 화면 캡처를 단체방에 올린 뒤, 같은 파일을 여기서 선택하면 해시만 체인에 기록됩니다. 원본은 올라가지 않습니다.</div>
+      <input type="file" id="proofFile" accept="image/*" style="margin-top:8px">
+      <div class="mono" id="proofHash" style="margin-top:6px;color:var(--sub)">파일을 선택하면 SHA-256 해시가 계산됩니다</div>
+      <button class="pri" id="btnSubmitProof">증빙 제출</button>
+      <div class="hint" id="proofHint"></div>
+    </div>
+    <div class="card">
+      <h2>내 증빙을 확인해 준 스터디원</h2>
+      <ul class="list" id="myAttesters"><li><span class="hint">없음</span></li></ul>
+    </div>
+  </section>
+
+  <!-- ④ 상호 확인 -->
+  <section id="tab-attest" style="display:none">
+    <div class="card">
+      <h2>상호 확인 <span class="badge" id="thresholdBadge">-</span></h2>
+      <div class="hint">다른 스터디원의 단체방 캡처를 보고 맞으면 확인합니다. 본인 제외, 1인 1회.</div>
+      <ul class="list" id="attestList"></ul>
+    </div>
+  </section>
+
+  <!-- ⑤ 정산 -->
+  <section id="tab-settle" style="display:none">
+    <div class="card">
+      <h2>회차 운영</h2>
+      <div class="hint">아래 3개는 등록 지갑 누구나 호출할 수 있습니다. 컨트랙트는 스스로 실행되지 않으므로 마감 후 한 사람이 눌러 주면 됩니다.</div>
+      <button class="pri" id="btnOpenRound">다음 회차 열기</button>
+      <button class="pri" id="btnSettle">회차 정산 (환급·분배·SBT)</button>
+      <button class="sec" id="btnFinalize">최종 정산 (개근 SBT·잔액 분배)</button>
+    </div>
+    <div class="card">
+      <h2 id="lastRoundTitle">회차 정산 결과</h2>
+      <table id="settleTable"><thead><tr><th>스터디원</th><th>판정</th><th class="r">확인</th><th class="r">환급</th></tr></thead><tbody></tbody></table>
+      <div class="kv"><span>몰수·이월 풀</span><b id="poolAmt">-</b></div>
+      <div class="kv"><span>출석자 1인 분배</span><b id="shareAmt">-</b></div>
+    </div>
+    <div class="card" id="excuseCard" style="display:none">
+      <h2>공결 설정 <span class="badge warn">임시 · 배포자 전용</span></h2>
+      <div class="hint">기말 구현에서 DAO 투표(신청자 제외 과반)로 대체됩니다.</div>
+      <div class="grid2" style="margin-top:8px">
+        <input type="number" id="excuseRound" placeholder="회차" min="1">
+        <select id="excuseMember"></select>
+      </div>
+      <button class="sec" id="btnExcuse">공결 설정</button>
+    </div>
+  </section>
+
+  <!-- 로그 -->
+  <section id="tab-log" style="display:none">
+    <div class="card">
+      <h2>온체인 이벤트</h2>
+      <div class="log" id="eventLog">-</div>
+    </div>
+    <div class="card">
+      <h2>컨트랙트</h2>
+      <div class="kv"><span>에스크로</span><span class="mono" id="cEscrow">-</span></div>
+      <div class="kv"><span>SDT</span><span class="mono" id="cSdt">-</span></div>
+      <div class="kv"><span>SBT</span><span class="mono" id="cSbt">-</span></div>
+    </div>
+  </section>
+
+  <div class="card demo" id="demoPanel" style="display:none">
+    <h2>데모 시간 조작 (로컬 Hardhat 전용)</h2>
+    <div class="row">
+      <button class="sm" data-ff="60">+1분</button>
+      <button class="sm" data-ff="600">+10분</button>
+      <button class="sm" data-ff="3600">+1시간</button>
+      <button class="sm" data-ff="86400">+1일</button>
+      <button class="sm" data-ff="604800">+7일</button>
+    </div>
+  </div>
+</div>
+
+<script src="./ethers.umd.min.js"></script>
+<script src="./config.js"></script>
+<script src="./abi.js"></script>
+<script>
+(() => {
+  const CFG = window.APP_CONFIG || null;
+  const ABI = window.APP_ABI || null;
+  const MODULES = ["", "Blockchain Cryptography", "Blockchain Storage", "Ethereum State Machine",
+    "Smart Contract Basics", "Solidity Language", "Solidity Core", "Solidity Governance"];
+  const STATE = ["모집 중(예치 대기)", "진행 중", "취소됨", "종료(최종 정산)"];
+  const STATE_CLS = ["warn", "ok", "bad", ""];
+  const ATT = ["대기", "출석", "지각", "결석", "공결"];
+  const ATT_CLS = ["", "ok", "warn", "bad", ""];
+  const PHASE = ["회차 없음", "증빙 제출", "지각 제출", "상호 확인", "정산 대기", "정산 완료"];
+  const ERR_KO = {
+    NotMember: "등록된 스터디원 지갑이 아닙니다", WrongState: "지금 상태에서는 할 수 없는 동작입니다",
+    AlreadyDeposited: "이미 예치했습니다", DepositWindowClosed: "예치 기한이 지났습니다",
+    DepositWindowOpen: "아직 예치 기한이 남아 있습니다", RoundNotOpen: "열린 회차가 없습니다",
+    PreviousRoundNotSettled: "이전 회차를 먼저 정산해야 합니다", AllRoundsDone: "모든 회차가 끝났습니다",
+    ProofAlreadySubmitted: "이번 회차 증빙을 이미 제출했습니다", ProofWindowClosed: "증빙 제출 기간이 끝났습니다",
+    EmptyHash: "해시가 비어 있습니다", SelfAttest: "본인 증빙은 확인할 수 없습니다", NoProof: "아직 증빙을 제출하지 않은 스터디원입니다",
+    AlreadyAttested: "이미 확인했습니다", AttestWindowClosed: "확인 기간이 끝났습니다",
+    TooEarlyToSettle: "확인 마감 전에는 정산할 수 없습니다", AlreadySettled: "이미 정산된 회차입니다",
+    NotAdmin: "배포자만 할 수 있습니다", InvalidRound: "회차 번호가 잘못되었습니다",
+    NotAllSettled: "모든 회차 정산 후에만 최종 정산할 수 있습니다", NothingToWithdraw: "인출할 금액이 없습니다",
+    ERC20InsufficientAllowance: "승인(approve) 금액이 부족합니다. 1번 승인을 먼저 눌러 주세요",
+    ERC20InsufficientBalance: "SDT 잔액이 부족합니다. 테스트 SDT를 받아 주세요",
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (v) => Number(ethers.formatUnits(v, 18)).toLocaleString("ko-KR", { maximumFractionDigits: 2 });
+  const short = (a) => a ? a.slice(0, 6) + "…" + a.slice(-4) : "-";
+  const ts = (t) => t ? new Date(Number(t) * 1000).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
+  const remain = (deadline, now) => {
+    const d = Number(deadline) - now;
+    if (d <= 0) return "마감";
+    const h = Math.floor(d / 3600), m = Math.floor((d % 3600) / 60);
+    return h >= 24 ? `${Math.floor(h / 24)}일 ${h % 24}시간 남음` : h > 0 ? `${h}시간 ${m}분 남음` : `${m}분 남음`;
+  };
+
+  let provider, signer, me, escrow, sdt, sbt, ifaceAll, demo = false, timer;
+  let snapshot = {};
+
+  function msg(text, cls) {
+    const el = $("msg"); el.className = "msg " + (cls || ""); el.textContent = text;
+    if (cls === "ok") setTimeout(() => { if (el.textContent === text) el.className = "msg"; }, 6000);
+  }
+  function explain(e) {
+    const data = e?.data || e?.info?.error?.data || e?.error?.data;
+    if (ifaceAll && typeof data === "string" && data.startsWith("0x") && data.length >= 10) {
+      try { const p = ifaceAll.parseError(data); if (p) return ERR_KO[p.name] || p.name; } catch (_) {}
+    }
+    if (e?.code === "ACTION_REJECTED") return "지갑에서 서명을 거부했습니다";
+    const m = e?.shortMessage || e?.reason || e?.message || String(e);
+    for (const k of Object.keys(ERR_KO)) if (m.includes(k)) return ERR_KO[k];
+    return m.length > 200 ? m.slice(0, 200) + "…" : m;
+  }
+  async function tx(label, fn) {
+    try {
+      msg(label + " 서명 요청 중…", "info");
+      const t = await fn();
+      msg(label + " 처리 중… " + short(t.hash), "info");
+      const r = await t.wait();
+      msg(label + " 완료 (블록 " + r.blockNumber + ")", "ok");
+      await refresh();
+    } catch (e) { console.error(e); msg(label + " 실패: " + explain(e), "err"); }
+  }
+
+  // ---------- 연결 ----------
+  function setupDemoAccounts() {
+    const sel = $("demoAccount"); sel.innerHTML = "";
+    const opt = (v, t) => { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.appendChild(o); };
+    opt(0, "배포자(관리자) · 계정0");
+    (CFG?.members || []).forEach((m, i) => opt(i + 1, `스터디원 ${String.fromCharCode(65 + i)} · ${short(m)}`));
+  }
+  $("mode").addEventListener("change", () => {
+    $("demoAccount").style.display = $("mode").value === "demo" ? "" : "none";
+  });
+  $("btnConnect").addEventListener("click", connect);
+  $("demoAccount").addEventListener("change", () => { if (demo) connect(); });
+
+  async function connect() {
+    try {
+      if (!CFG || !ABI) throw new Error("web/config.js 또는 web/abi.js가 없습니다. 먼저 npm run deploy:local 을 실행하세요.");
+      demo = $("mode").value === "demo";
+      if (demo) {
+        provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
+        signer = await provider.getSigner(Number($("demoAccount").value));
+      } else {
+        if (!window.ethereum) throw new Error("MetaMask가 설치되어 있지 않습니다.");
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        window.ethereum.on?.("accountsChanged", () => connect());
+        window.ethereum.on?.("chainChanged", () => location.reload());
+      }
+      me = await signer.getAddress();
+      const net = await provider.getNetwork();
+      if (Number(net.chainId) !== CFG.chainId) {
+        msg(`지갑 네트워크(chainId ${net.chainId})가 배포 네트워크(${CFG.network}, chainId ${CFG.chainId})와 다릅니다.`, "err");
+      }
+      escrow = new ethers.Contract(CFG.escrow, ABI.StudyEscrow, signer);
+      sdt = new ethers.Contract(CFG.sdt, ABI.MockSDT, signer);
+      sbt = new ethers.Contract(CFG.sbt, ABI.AttendanceSBT, signer);
+      ifaceAll = new ethers.Interface([...ABI.StudyEscrow, ...ABI.MockSDT.filter(f => f.type === "error"), ...ABI.AttendanceSBT.filter(f => f.type === "error")]);
+      $("netLabel").textContent = `${CFG.network} · chainId ${net.chainId}`;
+      $("me").textContent = me;
+      $("demoPanel").style.display = demo ? "" : "none";
+      $("cEscrow").textContent = CFG.escrow; $("cSdt").textContent = CFG.sdt; $("cSbt").textContent = CFG.sbt;
+      msg("연결됨: " + short(me), "ok");
+      clearInterval(timer); timer = setInterval(() => refresh().catch(() => {}), 15000);
+      await refresh();
+    } catch (e) { console.error(e); msg("연결 실패: " + explain(e), "err"); }
+  }
+
+  // ---------- 조회 ----------
+  async function refresh() {
+    if (!escrow) return;
+    const [members, cfg, state, curRound, depCount, block] = await Promise.all([
+      escrow.getMembers(), escrow.config(), escrow.state(), escrow.currentRound(),
+      escrow.depositedCount(), provider.getBlock("latest"),
+    ]);
+    const now = Number(block.timestamp);
+    const r = Number(curRound);
+    const rounds = Number(cfg.rounds), threshold = Number(cfg.threshold);
+    const isMember = members.map(a => a.toLowerCase()).includes(me.toLowerCase());
+    const admin = await escrow.admin();
+    const isAdmin = admin.toLowerCase() === me.toLowerCase();
+    $("roleBadge").style.display = ""; $("roleBadge").textContent = isMember ? "스터디원" : isAdmin ? "배포자" : "비멤버";
+    $("roleBadge").className = "badge " + (isMember ? "ok" : isAdmin ? "warn" : "bad");
+    $("excuseCard").style.display = isAdmin ? "" : "none";
+
+    const [sdtBal, locked, bal, att, sbtBal, createdAt] = await Promise.all([
+      sdt.balanceOf(me), escrow.lockedOf(me), escrow.balanceOf(me), escrow.attendCount(me), sbt.balanceOf(me), escrow.createdAt(),
+    ]);
+    $("sdtBal").textContent = fmt(sdtBal);
+    $("locked").textContent = fmt(locked) + " SDT";
+    $("withdrawable").textContent = fmt(bal) + " SDT";
+    $("attendCount").textContent = `${att} / ${rounds}회`;
+    $("sbtCount").textContent = `${sbtBal}개`;
+    $("btnWithdraw").disabled = bal === 0n;
+    $("stateBadge").textContent = STATE[Number(state)]; $("stateBadge").className = "badge " + STATE_CLS[Number(state)];
+
+    // 회차
+    const rd = r > 0 ? await escrow.getRound(r) : null;
+    const phase = Number(await escrow.phase());
+    $("roundProgress").textContent = `${r} / ${rounds}회차`;
+    $("roundBar").style.width = `${Math.round(100 * r / rounds)}%`;
+    $("moduleName").textContent = r > 0 ? `모듈 ${r} · ${MODULES[r] || ""}` : "아직 회차가 열리지 않았습니다";
+    $("proofModule").textContent = $("moduleName").textContent;
+    $("phaseBadge").textContent = PHASE[phase];
+    $("phaseBadge").className = "badge " + (phase === 4 ? "warn" : phase === 5 ? "" : "ok");
+    $("dlProof").textContent = rd ? `${ts(rd.proofDeadline)} (${remain(rd.proofDeadline, now)})` : "-";
+    $("dlLate").textContent = rd ? `${ts(rd.lateDeadline)} (${remain(rd.lateDeadline, now)})` : "-";
+    $("dlAttest").textContent = rd ? `${ts(rd.attestDeadline)} (${remain(rd.attestDeadline, now)})` : "-";
+    $("chainTime").textContent = "체인 시각 " + new Date(now * 1000).toLocaleString("ko-KR");
+
+    // 예치
+    const total = cfg.perRound * BigInt(rounds);
+    $("depositTotal").textContent = fmt(total) + " SDT";
+    $("depositDesc").textContent = `${rounds}회 × 회당 ${fmt(cfg.perRound)} SDT · 전원이 예치하면 1회차가 열립니다`;
+    $("depositCount").textContent = `${depCount} / ${members.length}명`;
+    const depFlags = await Promise.all(members.map(a => escrow.deposited(a)));
+    $("depositList").innerHTML = members.map((a, i) =>
+      `<li><span class="who">스터디원 ${String.fromCharCode(65 + i)}${a.toLowerCase() === me.toLowerCase() ? " (나)" : ""}<small>${a}</small></span>` +
+      `<span class="badge ${depFlags[i] ? "ok" : "warn"}">${depFlags[i] ? "예치 완료" : "미예치"}</span></li>`).join("");
+    const depDeadline = Number(createdAt) + Number(cfg.depositWindow);
+    $("dlDeposit").textContent = `${ts(depDeadline)} (${remain(depDeadline, now)})`;
+    const created = Number(state) === 0;
+    const myDep = isMember && depFlags[members.findIndex(a => a.toLowerCase() === me.toLowerCase())];
+    $("btnApprove").disabled = !(created && isMember && !myDep);
+    $("btnDeposit").disabled = !(created && isMember && !myDep);
+    $("btnCancel").disabled = !(created && now > depDeadline);
+
+    // 증빙·확인
+    const mrs = r > 0 ? await Promise.all(members.map(a => escrow.getMemberRound(r, a))) : [];
+    const myIdx = members.findIndex(a => a.toLowerCase() === me.toLowerCase());
+    const mine = myIdx >= 0 && r > 0 ? mrs[myIdx] : null;
+    const hasProof = mine && mine.proofHash !== ethers.ZeroHash;
+    $("myProofBadge").textContent = !mine ? "-" : hasProof ? (mine.late ? "제출(지각)" : "제출 완료") : "미제출";
+    $("myProofBadge").className = "badge " + (!mine ? "" : hasProof ? (mine.late ? "warn" : "ok") : "bad");
+    $("myAttestCount").textContent = mine ? `${mine.attestCount} / ${threshold}명` : "-";
+    $("btnSubmitProof").disabled = !(isMember && r > 0 && !rd.settled && phase <= 2 && !hasProof && pendingHash);
+    $("proofHint").textContent = phase === 2 ? "증빙 마감이 지났습니다. 지금 제출하면 지각(회차 몫 50% 환급)으로 처리됩니다." : "";
+    if (mine && hasProof) {
+      const atts = await escrow.getAttesters(r, me);
+      $("myAttesters").innerHTML = atts.length ? atts.map(a => `<li><span class="who">스터디원 ${String.fromCharCode(65 + members.findIndex(x => x.toLowerCase() === a.toLowerCase()))}<small>${a}</small></span><span class="badge ok">확인함</span></li>`).join("") : `<li><span class="hint">아직 없음</span></li>`;
+    } else $("myAttesters").innerHTML = `<li><span class="hint">없음</span></li>`;
+
+    $("thresholdBadge").textContent = `${threshold} / ${members.length - 1}명 확인 시 출석`;
+    const attestedByMe = r > 0 ? await Promise.all(members.map(a => escrow.hasAttested(r, a, me))) : [];
+    $("attestList").innerHTML = r === 0 ? `<li><span class="hint">열린 회차가 없습니다</span></li>` : members.map((a, i) => {
+      if (a.toLowerCase() === me.toLowerCase()) return "";
+      const x = mrs[i]; const p = x.proofHash !== ethers.ZeroHash;
+      const st = !p ? `<span class="badge bad">증빙 미제출</span>` :
+        attestedByMe[i] ? `<span class="badge ok">확인함</span>` :
+        `<button class="sm pri" data-attest="${a}" ${(!isMember || phase > 3 || rd.settled) ? "disabled" : ""}>확인</button>`;
+      return `<li><span class="who">스터디원 ${String.fromCharCode(65 + i)} <small>${p ? short(x.proofHash) + (x.late ? " · 지각" : "") : ""} 확인 ${x.attestCount}/${threshold}</small></span>${st}</li>`;
+    }).join("");
+    document.querySelectorAll("[data-attest]").forEach(b => b.onclick = () => tx("확인 서명", () => escrow.attest(b.dataset.attest)));
+
+    // 정산
+    const active = Number(state) === 1;
+    $("btnOpenRound").disabled = !(active && (r === 0 || rd.settled) && r < rounds);
+    $("btnSettle").disabled = !(active && r > 0 && !rd.settled && phase === 4);
+    $("btnFinalize").disabled = !(active && r === rounds && rd.settled);
+    const showRound = r > 0 && rd.settled ? r : r > 1 ? r - 1 : 0;
+    if (showRound > 0) {
+      const srd = showRound === r ? rd : await escrow.getRound(showRound);
+      const smrs = showRound === r ? mrs : await Promise.all(members.map(a => escrow.getMemberRound(showRound, a)));
+      $("lastRoundTitle").textContent = `${showRound}회차 정산 결과`;
+      $("settleTable").querySelector("tbody").innerHTML = members.map((a, i) => {
+        const x = smrs[i]; const s = Number(x.status);
+        const refund = s === 1 || s === 4 ? cfg.perRound : s === 2 ? cfg.perRound / 2n : 0n;
+        const share = s === 1 && srd.presentCount > 0n ? srd.pool / srd.presentCount : 0n;
+        return `<tr><td>스터디원 ${String.fromCharCode(65 + i)}${a.toLowerCase() === me.toLowerCase() ? " (나)" : ""}</td><td><span class="badge ${ATT_CLS[s]}">${ATT[s]}</span></td><td class="r">${x.attestCount}</td><td class="r">${fmt(refund + share)}</td></tr>`;
+      }).join("");
+      $("poolAmt").textContent = fmt(srd.pool) + " SDT";
+      $("shareAmt").textContent = srd.presentCount > 0n ? fmt(srd.pool / srd.presentCount) + " SDT" : "출석자 없음 · 다음 회차 이월";
+    } else {
+      $("lastRoundTitle").textContent = "회차 정산 결과";
+      $("settleTable").querySelector("tbody").innerHTML = `<tr><td colspan="4" class="hint">아직 정산된 회차가 없습니다</td></tr>`;
+      $("poolAmt").textContent = "-"; $("shareAmt").textContent = "-";
+    }
+    $("excuseMember").innerHTML = members.map((a, i) => `<option value="${a}">스터디원 ${String.fromCharCode(65 + i)}</option>`).join("");
+
+    snapshot = { members, cfg, r, rd, threshold, rounds, total };
+    await loadEvents();
+  }
+
+  async function loadEvents() {
+    try {
+      const logs = await provider.getLogs({ address: CFG.escrow, fromBlock: 0, toBlock: "latest" });
+      const iface = new ethers.Interface(ABI.StudyEscrow);
+      const names = snapshot.members || [];
+      const who = (a) => { const i = names.findIndex(x => x.toLowerCase() === a.toLowerCase()); return i >= 0 ? "스터디원 " + String.fromCharCode(65 + i) : short(a); };
+      const lines = logs.map(l => {
+        const p = iface.parseLog(l); if (!p) return null;
+        const a = p.args;
+        switch (p.name) {
+          case "Deposited": return `[${l.blockNumber}] 예치 ${who(a.member)} ${fmt(a.amount)} SDT`;
+          case "StudyStarted": return `[${l.blockNumber}] 스터디 시작`;
+          case "StudyCancelled": return `[${l.blockNumber}] 스터디 취소`;
+          case "Refunded": return `[${l.blockNumber}] 환불 ${who(a.member)} ${fmt(a.amount)} SDT`;
+          case "RoundOpened": return `[${l.blockNumber}] ${a.round}회차 시작 (확인 마감 ${ts(a.attestDeadline)})`;
+          case "ProofSubmitted": return `[${l.blockNumber}] ${a.round}회차 증빙 ${who(a.member)} ${short(a.proofHash)}${a.late ? " 지각" : ""}`;
+          case "Attested": return `[${l.blockNumber}] ${a.round}회차 확인 ${who(a.attester)} → ${who(a.member)} (${a.count})`;
+          case "ExcuseSet": return `[${l.blockNumber}] ${a.round}회차 공결 ${who(a.member)}`;
+          case "AttendanceJudged": return `[${l.blockNumber}] ${a.round}회차 판정 ${who(a.member)} ${ATT[Number(a.status)]} 환급 ${fmt(a.refund)}`;
+          case "RoundSettled": return `[${l.blockNumber}] ${a.round}회차 정산 출석 ${a.presentCount}명 풀 ${fmt(a.pool)} 1인 ${fmt(a.sharePerPresent)}`;
+          case "Distributed": return `[${l.blockNumber}] ${a.round === 0n ? "최종" : a.round + "회차"} 분배 ${who(a.member)} +${fmt(a.amount)} SDT`;
+          case "StudyFinalized": return `[${l.blockNumber}] 최종 정산 개근 ${a.perfectCount}명 잔액 ${fmt(a.leftover)}`;
+          case "Withdrawn": return `[${l.blockNumber}] 인출 ${who(a.member)} ${fmt(a.amount)} SDT`;
+          default: return `[${l.blockNumber}] ${p.name}`;
+        }
+      }).filter(Boolean);
+      $("eventLog").textContent = lines.length ? lines.reverse().join("\n") : "아직 이벤트가 없습니다";
+    } catch (e) { $("eventLog").textContent = "이벤트 조회 실패: " + explain(e); }
+  }
+
+  // ---------- 동작 ----------
+  let pendingHash = null;
+  $("proofFile").addEventListener("change", async (ev) => {
+    const f = ev.target.files[0]; if (!f) return;
+    const buf = await f.arrayBuffer();
+    const h = await crypto.subtle.digest("SHA-256", buf);
+    pendingHash = "0x" + Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, "0")).join("");
+    $("proofHash").textContent = `${f.name} · SHA-256 ${pendingHash}`;
+    refresh().catch(() => {});
+  });
+  $("btnSubmitProof").onclick = () => tx("증빙 제출", () => escrow.submitProof(pendingHash));
+  $("btnApprove").onclick = () => tx("SDT 승인", () => sdt.approve(CFG.escrow, snapshot.total));
+  $("btnDeposit").onclick = () => tx("보증금 예치", () => escrow.deposit());
+  $("btnFaucet").onclick = () => tx("테스트 SDT 받기", () => sdt.faucet(ethers.parseUnits("100000", 18)));
+  $("btnCancel").onclick = () => tx("스터디 취소", () => escrow.cancelStudy());
+  $("btnWithdraw").onclick = () => tx("인출", () => escrow.withdraw());
+  $("btnOpenRound").onclick = () => tx("회차 열기", () => escrow.openRound());
+  $("btnSettle").onclick = () => tx("회차 정산", () => escrow.settleRound());
+  $("btnFinalize").onclick = () => tx("최종 정산", () => escrow.finalizeStudy());
+  $("btnExcuse").onclick = () => tx("공결 설정", () => escrow.setExcuse(Number($("excuseRound").value), $("excuseMember").value));
+
+  document.querySelectorAll("[data-ff]").forEach(b => b.onclick = async () => {
+    try {
+      await provider.send("evm_increaseTime", [Number(b.dataset.ff)]);
+      await provider.send("evm_mine", []);
+      msg(`체인 시각을 ${b.textContent} 앞당겼습니다`, "ok");
+      await refresh();
+    } catch (e) { msg("시간 조작 실패: " + explain(e), "err"); }
+  });
+
+  document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+    document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
+    document.querySelectorAll("section[id^=tab-]").forEach(s => s.style.display = s.id === "tab-" + b.dataset.tab ? "" : "none");
+  });
+
+  setupDemoAccounts();
+  if (!CFG) msg("web/config.js가 없습니다. 먼저 npm run deploy:local 을 실행해 주세요.", "err");
+})();
+</script>
+</body>
+</html>

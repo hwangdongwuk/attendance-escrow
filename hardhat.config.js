@@ -7,7 +7,7 @@ const { SEPOLIA_RPC_URL, DEPLOYER_PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env
 module.exports = {
   solidity: {
     version: "0.8.24",
-    settings: { optimizer: { enabled: true, runs: 200 } },
+    settings: { optimizer: { enabled: true, runs: 200 }, evmVersion: "cancun" },
   },
   networks: {
     hardhat: {},

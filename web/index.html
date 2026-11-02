@@ -2,221 +2,283 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>출석 보증금 에스크로</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-  :root{
-    --bg:#EEF1EE; --card:#FFFFFF; --ink:#17201B; --sub:#5F6B64; --line:#D9DED9;
-    --accent:#1F5A45; --accent-ink:#FFFFFF; --soft:#E4EFE9; --warn:#9A5B00; --warn-bg:#FFF4E0;
-    --bad:#9B2C2C; --bad-bg:#FBE9E9; --ok:#1F5A45; --ok-bg:#E4EFE9;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:15px;line-height:1.45}
-  .app{max-width:440px;margin:0 auto;padding:12px 12px 80px}
-  header{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px}
-  header h1{font-size:17px;margin:0;font-weight:700}
-  header .net{font-size:12px;color:var(--sub)}
-  .wallet{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
-  .wallet .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .wallet select,.wallet button{font-size:13px}
-  .addr{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--sub)}
-  .tabs{display:flex;gap:4px;margin:6px 0 10px;overflow-x:auto}
-  .tabs button{flex:1;min-width:56px;padding:8px 4px;border:1px solid var(--line);background:var(--card);border-radius:10px;font-size:13px;color:var(--sub);cursor:pointer}
-  .tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
-  .card h2{font-size:14px;margin:0 0 8px;color:var(--sub);font-weight:600}
-  .big{font-size:26px;font-weight:700;letter-spacing:-.5px}
-  .kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
-  .kv:last-child{border-bottom:0}
-  .kv b{font-weight:600}
-  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--soft);color:var(--accent)}
-  .badge.warn{background:var(--warn-bg);color:var(--warn)}
-  .badge.bad{background:var(--bad-bg);color:var(--bad)}
-  .badge.ok{background:var(--ok-bg);color:var(--ok)}
-  button.pri{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
-  button.sec{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-size:14px;cursor:pointer;margin-top:8px}
-  button.sm{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;cursor:pointer}
-  button.sm.pri{width:auto;margin:0;padding:6px 12px;font-size:13px}
-  button:disabled{opacity:.45;cursor:not-allowed}
-  .list{margin:0;padding:0;list-style:none}
-  .list li{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);gap:8px}
-  .list li:last-child{border-bottom:0}
-  .list .who{font-size:14px}
-  .list .who small{display:block;color:var(--sub);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px}
-  .hint{font-size:12px;color:var(--sub);margin-top:6px}
-  .msg{padding:10px 12px;border-radius:10px;font-size:13px;margin:8px 0;display:none;white-space:pre-wrap}
-  .msg.err{display:block;background:var(--bad-bg);color:var(--bad)}
-  .msg.ok{display:block;background:var(--ok-bg);color:var(--ok)}
-  .msg.info{display:block;background:var(--warn-bg);color:var(--warn)}
-  input[type=file],input[type=text],input[type=number],select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
-  .progress{height:8px;background:var(--soft);border-radius:999px;overflow:hidden;margin:6px 0}
-  .progress i{display:block;height:100%;background:var(--accent)}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all}
-  .log{font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;max-height:360px;overflow:auto;color:var(--sub)}
-  .demo{border:1px dashed var(--warn);background:var(--warn-bg)}
-  .demo .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
-  th{color:var(--sub);font-weight:600;font-size:12px}
-  td.r,th.r{text-align:right}
+/* 화면시안 v0.2 토큰 (2026-10-21) */
+:root{
+  --bg:#F4F6F9; --card:#FFFFFF; --ink:#191F28; --ink2:#4E5968; --ink3:#8B95A1; --line:#EEF0F3;
+  --accent:#4F6EF7; --accent-soft:#EEF2FF; --ok:#1FB07A; --ok-soft:#E6F7F0; --warn:#F2583E; --warn-soft:#FEECE8;
+  --dark:#191F28; --r:20px;
+  --font:'Pretendard Variable',Pretendard,-apple-system,'Noto Sans KR','Malgun Gothic',sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:#E3E6EB;font-family:var(--font);color:var(--ink);letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+.app{max-width:430px;min-height:100vh;margin:0 auto;background:var(--bg);padding:18px 20px 190px;position:relative}
+@media (max-width:430px){body{background:var(--bg)}}
+
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;min-height:32px}
+.top .study{font-size:14px;font-weight:600;color:var(--ink2)}
+.wallet{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);background:#fff;border:0;border-radius:999px;padding:6px 10px 6px 6px;font-family:var(--font);cursor:pointer;box-shadow:0 2px 10px rgba(25,31,40,.04)}
+.wallet i{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#4F6EF7,#8EC5FF);display:inline-block}
+.wallet.off i{background:#D1D6DB}
+h2{font-size:26px;font-weight:800;line-height:1.3;letter-spacing:-.03em;margin-bottom:18px;color:var(--ink)}
+h2 span{color:var(--accent)}
+.card{background:var(--card);border-radius:var(--r);padding:22px;margin-bottom:12px;box-shadow:0 2px 10px rgba(25,31,40,.04)}
+.card.dark{background:var(--dark);color:#fff}
+.k{font-size:13px;color:var(--ink3);font-weight:500}
+.dark .k{color:#9AA4B2}
+.amt{font-size:38px;font-weight:800;letter-spacing:-.04em;margin:6px 0 12px;line-height:1.1}
+.amt small{font-size:18px;font-weight:600;margin-left:4px;letter-spacing:0}
+.seg{display:flex;gap:5px;margin:4px 0 10px}
+.seg i{flex:1;height:6px;border-radius:999px;background:#2C3340}
+.seg i.on{background:#4F6EF7}
+.seg i.now{background:#fff}
+.sub{font-size:13px;color:#9AA4B2}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.mute{background:#F2F4F6;color:var(--ink3)}
+.chips{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.t{font-size:17px;font-weight:700;margin:12px 0 4px;letter-spacing:-.02em}
+.d{font-size:14px;color:var(--ink2);line-height:1.55}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font:700 16px var(--font);background:var(--accent);color:#fff;text-align:center;letter-spacing:-.01em;cursor:pointer}
+.btn.ghost{background:#F2F4F6;color:var(--ink)}
+.btn.small{padding:12px;font-size:14px;margin-top:10px;border-radius:12px}
+.btn[disabled]{background:#E5E8EB;color:#B0B8C1;cursor:default}
+.hint{font-size:12.5px;color:var(--ink3);margin-top:10px;line-height:1.55}
+.list{display:flex;flex-direction:column}
+.li{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:15px;font-weight:500;min-height:46px}
+.li:first-child{border-top:0;padding-top:4px}
+.li .r{margin-left:auto;font-size:13px;color:var(--ink3);font-weight:500;text-align:right}
+.li .r.ok{color:var(--ok)}
+.li .r.plus{color:var(--ok);font-weight:700;font-size:15px}
+.li .r.warn{color:var(--warn)}
+.li small{display:block;font-size:11px;color:var(--ink3);font-weight:500;font-family:ui-monospace,Consolas,monospace;letter-spacing:0}
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex:none}
+.steps{display:flex;flex-direction:column;gap:12px}
+.step{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:500;cursor:pointer;background:none;border:0;padding:0;font-family:var(--font);color:var(--ink);text-align:left;width:100%}
+.step b{width:24px;height:24px;border-radius:50%;background:var(--ok);display:inline-flex;align-items:center;justify-content:center;flex:none;position:relative}
+.step b::after{content:"";width:6px;height:10px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg);margin-top:-3px}
+.step b.todo{background:#fff;border:2px solid var(--warn)}
+.step b.todo::after{display:none}
+.step em{font-style:normal;color:var(--ink3);font-size:13px;margin-left:auto;white-space:nowrap}
+.hash{font:600 13px/1.5 ui-monospace,'SF Mono',Consolas,monospace;background:#F2F4F6;color:var(--ink2);padding:12px 14px;border-radius:12px;word-break:break-all;letter-spacing:0;margin-top:8px}
+.hash.empty{color:var(--ink3);font-weight:500}
+.ring{width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--accent) 0 0%,#2C3340 0% 100%);display:flex;align-items:center;justify-content:center;flex:none}
+.ring i{width:66px;height:66px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;letter-spacing:-.02em;font-style:normal}
+.ring i small{font-size:12px;color:#9AA4B2;font-weight:600;margin-left:2px}
+.sbtn{border:0;background:var(--accent-soft);color:var(--accent);font:700 13px var(--font);border-radius:10px;padding:9px 14px;margin-left:auto;cursor:pointer;white-space:nowrap}
+.sbtn[disabled]{background:#F2F4F6;color:#B0B8C1;cursor:default}
+.done{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ok);white-space:nowrap}
+.done::before{content:"";width:18px;height:18px;border-radius:50%;background:var(--ok-soft);display:inline-block}
+.split{display:flex;justify-content:space-between;align-items:center;font-size:15px;padding:10px 0;border-top:1px solid var(--line)}
+.split:first-child{border-top:0}
+.split b{font-weight:700;letter-spacing:-.01em}
+.split.total{border-top:2px solid var(--ink)}
+.split.total span{font-weight:700}
+.split.total b{font-size:18px}
+.note{font-size:12.5px;color:var(--ink3);line-height:1.55;margin-top:12px;padding:12px;background:#F7F8FA;border-radius:12px}
+.badge{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:600;margin-bottom:12px;box-shadow:0 2px 10px rgba(25,31,40,.04)}
+.badge i{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#4F6EF7,#A78BFA);display:inline-block;flex:none}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+select,input[type=number]{width:100%;padding:12px 14px;border:1px solid #E5E8EB;border-radius:12px;font:500 14px var(--font);background:#fff;color:var(--ink);margin-top:8px}
+.file{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.msg{padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:12px;display:none;white-space:pre-wrap;line-height:1.5;font-weight:500}
+.msg.err{display:block;background:var(--warn-soft);color:var(--warn)}
+.msg.ok{display:block;background:var(--ok-soft);color:var(--ok)}
+.msg.info{display:block;background:var(--accent-soft);color:var(--accent)}
+.log{font:500 12px/1.6 ui-monospace,Consolas,monospace;white-space:pre-wrap;color:var(--ink2);letter-spacing:0;max-height:50vh;overflow:auto}
+.mono{font:500 12px ui-monospace,Consolas,monospace;word-break:break-all;color:var(--ink2);letter-spacing:0}
+.sheet{display:none}
+.sheet.on{display:block}
+section[data-screen]{display:none}
+section[data-screen].on{display:block}
+
+/* 하단 고정: 데모 시간 조작 · CTA 1개 · 탭 */
+.bottom{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;padding:0 20px;background:linear-gradient(to top,var(--bg) 85%,rgba(244,246,249,0));z-index:5}
+.demo{display:none;gap:6px;justify-content:flex-end;padding:8px 0 0}
+.demo.on{display:flex}
+.demo button{border:0;background:#fff;color:var(--ink2);font:600 11px var(--font);border-radius:999px;padding:6px 10px;cursor:pointer;box-shadow:0 2px 10px rgba(25,31,40,.04)}
+.demo span{font-size:11px;color:var(--ink3);margin-right:auto;align-self:center}
+.cta{padding:10px 0 8px}
+.cta .btn{margin:0}
+.cta.hidden{display:none}
+nav{display:flex;background:#fff;border-radius:18px;padding:6px;margin-bottom:14px;box-shadow:0 2px 10px rgba(25,31,40,.06)}
+nav button{flex:1;border:0;background:none;border-radius:12px;padding:9px 0;font:600 12px var(--font);color:var(--ink3);cursor:pointer;position:relative}
+nav button.on{background:var(--accent-soft);color:var(--accent)}
+nav button .dot{position:absolute;top:6px;right:10px;width:6px;height:6px;border-radius:50%;background:var(--warn);display:none}
+nav button .dot.on{display:block}
 </style>
 </head>
 <body>
 <div class="app">
-  <header>
-    <h1>이더리움 부트캠프 스터디</h1>
-    <span class="net" id="netLabel">미연결</span>
-  </header>
+  <div class="top">
+    <span class="study" id="topStudy">이더리움 스터디</span>
+    <button class="wallet off" id="walletChip" type="button"><i></i><span id="walletText">지갑 연결</span></button>
+  </div>
 
-  <div class="wallet">
-    <div class="row">
-      <select id="mode">
-        <option value="metamask">MetaMask 지갑</option>
-        <option value="demo">로컬 데모 (Hardhat 계정)</option>
-      </select>
-      <select id="demoAccount" style="display:none"></select>
-      <button class="sm pri" id="btnConnect">연결</button>
-    </div>
-    <div class="row" style="margin-top:6px">
-      <span class="addr" id="me">-</span>
-      <span class="badge" id="roleBadge" style="display:none"></span>
-      <span style="margin-left:auto;font-size:13px"><b id="sdtBal">-</b> SDT</span>
-    </div>
+  <!-- 지갑 연결 시트 -->
+  <div class="card sheet on" id="sheet">
+    <div class="k">연결 방식</div>
+    <select id="mode">
+      <option value="demo">로컬 데모 (Hardhat 계정)</option>
+      <option value="metamask">MetaMask 지갑</option>
+    </select>
+    <select id="demoAccount"></select>
+    <button class="btn small" id="btnConnect" type="button">연결하기</button>
+    <div class="hint" id="connectHint">같은 PC에서 Hardhat 노드가 돌고 있으면 로컬 데모로, 아니면 MetaMask로 연결해요.</div>
   </div>
 
   <div class="msg" id="msg"></div>
 
-  <div class="tabs">
-    <button data-tab="home" class="on">홈</button>
-    <button data-tab="deposit">예치</button>
-    <button data-tab="proof">증빙</button>
-    <button data-tab="attest">확인</button>
-    <button data-tab="settle">정산</button>
-    <button data-tab="log">로그</button>
-  </div>
-
   <!-- ① 홈 -->
-  <section id="tab-home">
-    <div class="card">
-      <h2>내 스터디</h2>
-      <div class="kv"><span>상태</span><span class="badge" id="stateBadge">-</span></div>
-      <div class="kv"><span>남은 보증금(잠김)</span><b id="locked">-</b></div>
-      <div class="kv"><span>인출 가능</span><b id="withdrawable">-</b></div>
-      <div class="kv"><span>회차 진행</span><b id="roundProgress">-</b></div>
-      <div class="progress"><i id="roundBar" style="width:0%"></i></div>
-      <div class="kv"><span>출석 횟수</span><b id="attendCount">-</b></div>
-      <div class="kv"><span>보유 출석 SBT</span><b id="sbtCount">-</b></div>
-      <button class="pri" id="btnWithdraw">인출하기</button>
+  <section data-screen="home" class="on">
+    <h2 id="homeH2">지갑을 연결하면<br>시작돼요</h2>
+    <div class="card dark">
+      <div class="k">걸어 둔 보증금</div>
+      <div class="amt"><span id="locked">0</span><small>SDT</small></div>
+      <div class="seg" id="seg"></div>
+      <div class="sub" id="segSub">아직 스터디가 시작되지 않았어요</div>
+    </div>
+    <div class="card" id="taskCard">
+      <span class="chip mute" id="taskChip">대기</span>
+      <div class="t" id="taskTitle">스터디 준비 중</div>
+      <div class="d" id="taskDesc">지갑을 연결하면 지금 해야 할 일이 여기에 떠요.</div>
     </div>
     <div class="card">
-      <h2>이번 주</h2>
-      <div class="big" id="moduleName">-</div>
-      <div class="kv"><span>단계</span><span class="badge" id="phaseBadge">-</span></div>
-      <div class="kv"><span>증빙 제출 마감</span><b id="dlProof">-</b></div>
-      <div class="kv"><span>지각 제출 마감</span><b id="dlLate">-</b></div>
-      <div class="kv"><span>상호 확인 마감</span><b id="dlAttest">-</b></div>
-      <div class="hint" id="chainTime"></div>
+      <div class="list" id="homeList">
+        <div class="li"><span>지금까지 돌려받은 돈</span><span class="r plus" id="homeReturned">0 SDT</span></div>
+      </div>
+      <button class="btn ghost small" id="btnWithdraw" type="button" style="display:none">인출하기</button>
     </div>
   </section>
 
   <!-- ② 예치 -->
-  <section id="tab-deposit" style="display:none">
+  <section data-screen="deposit">
+    <h2 id="depH2">보증금을 걸면<br>스터디가 시작돼요</h2>
     <div class="card">
-      <h2>보증금 예치</h2>
-      <div class="big" id="depositTotal">-</div>
-      <div class="hint" id="depositDesc">-</div>
-      <div class="kv"><span>예치 현황</span><b id="depositCount">-</b></div>
-      <ul class="list" id="depositList"></ul>
-      <div class="kv"><span>예치 마감</span><b id="dlDeposit">-</b></div>
-      <div class="grid2">
-        <button class="sec" id="btnApprove">1. 승인(approve)</button>
-        <button class="sec" id="btnDeposit">2. 예치(deposit)</button>
-      </div>
-      <div class="hint">예치는 서명 2회가 필요합니다. 먼저 SDT 사용을 승인한 뒤 예치합니다.</div>
-      <button class="sec" id="btnFaucet">테스트 SDT 받기 (100,000 SDT)</button>
-      <button class="sec" id="btnCancel">예치 기한 경과, 스터디 취소·환불</button>
+      <div class="k">내가 넣을 금액</div>
+      <div class="amt"><span id="depTotal">0</span><small>SDT</small></div>
+      <div class="d" id="depDesc">-</div>
+      <div class="note" id="depNote">-</div>
+    </div>
+    <div class="card">
+      <div class="row"><span class="k">예치 현황</span><span class="chip" id="depChip">0 / 0명</span></div>
+      <div class="list" id="depList" style="margin-top:8px"></div>
+    </div>
+    <div class="card" id="depExtra">
+      <div class="row"><div><div class="k">내 지갑 SDT</div><div style="font-size:17px;font-weight:700;margin-top:2px"><span id="sdtBal">0</span> SDT</div></div>
+        <button class="sbtn" id="btnFaucet" type="button">테스트 SDT 받기</button></div>
+      <div class="hint">시연용 토큰이에요. 예치 버튼을 누르면 SDT 사용 승인과 예치, 서명 2번이 이어서 뜹니다.</div>
+      <button class="btn ghost small" id="btnCancel" type="button" style="display:none">예치 기한이 지났어요 · 취소하고 전액 돌려받기</button>
     </div>
   </section>
 
   <!-- ③ 증빙 제출 -->
-  <section id="tab-proof" style="display:none">
+  <section data-screen="proof">
+    <h2 id="proofH2">캡처를 올리면<br>해시만 기록돼요</h2>
     <div class="card">
-      <h2>학습 증빙 제출</h2>
-      <div class="big" id="proofModule">-</div>
-      <div class="kv"><span>내 증빙</span><span class="badge" id="myProofBadge">-</span></div>
-      <div class="kv"><span>받은 확인</span><b id="myAttestCount">-</b></div>
-      <div class="hint">진도 100% 화면 캡처를 단체방에 올린 뒤, 같은 파일을 여기서 선택하면 해시만 체인에 기록됩니다. 원본은 올라가지 않습니다.</div>
-      <input type="file" id="proofFile" accept="image/*" style="margin-top:8px">
-      <div class="mono" id="proofHash" style="margin-top:6px;color:var(--sub)">파일을 선택하면 SHA-256 해시가 계산됩니다</div>
-      <button class="pri" id="btnSubmitProof">증빙 제출</button>
-      <div class="hint" id="proofHint"></div>
+      <div class="steps">
+        <button class="step" id="step1" type="button"><b class="todo"></b>진도 100% 화면 캡처<em>눌러서 체크</em></button>
+        <button class="step" id="step2" type="button"><b class="todo"></b>단체방 공유<em>눌러서 체크</em></button>
+        <label class="step" id="step3"><b class="todo"></b><span id="step3Text">파일 선택</span><em id="step3Em">탭해서 선택</em><input class="file" type="file" id="proofFile" accept="image/*"></label>
+      </div>
     </div>
     <div class="card">
-      <h2>내 증빙을 확인해 준 스터디원</h2>
-      <ul class="list" id="myAttesters"><li><span class="hint">없음</span></li></ul>
+      <div class="k">블록체인에 남는 값</div>
+      <div class="hash empty" id="proofHash">파일을 고르면 SHA-256 값이 여기에 계산돼요</div>
+      <div class="note">원본 파일은 올라가지 않아요. 단체방 원본과 이 값을 대조하면 누구나 위조 여부를 확인할 수 있어요.</div>
+    </div>
+    <div class="card row">
+      <span class="chip warn" id="proofDlChip">제출 마감</span><span style="font-size:15px;font-weight:600" id="proofDl">-</span>
+    </div>
+    <p class="hint" id="proofLateHint" style="padding:0 4px">마감 후 지각 기간 안에 내면 지각으로 접수되고, 회차 몫의 절반만 돌려받아요.</p>
+    <div class="card" id="myAttCard" style="display:none">
+      <div class="row"><span class="k">내 증빙을 확인해 준 스터디원</span><span class="chip" id="myAttChip">0 / 3</span></div>
+      <div class="list" id="myAttesters" style="margin-top:8px"></div>
     </div>
   </section>
 
   <!-- ④ 상호 확인 -->
-  <section id="tab-attest" style="display:none">
+  <section data-screen="attest">
+    <h2 id="attH2">확인 <span>3개</span>를 받으면<br>출석이에요</h2>
+    <div class="card dark" style="display:flex;align-items:center;gap:18px">
+      <div class="ring" id="ring"><i><span id="ringN">0</span><small id="ringD">/3</small></i></div>
+      <div>
+        <div class="k">내 증빙 확인</div>
+        <div style="font-size:17px;font-weight:700;margin:4px 0 6px" id="ringText">증빙을 먼저 제출해 주세요</div>
+        <div class="sub" id="ringSub">-</div>
+      </div>
+    </div>
     <div class="card">
-      <h2>상호 확인 <span class="badge" id="thresholdBadge">-</span></h2>
-      <div class="hint">다른 스터디원의 단체방 캡처를 보고 맞으면 확인합니다. 본인 제외, 1인 1회.</div>
-      <ul class="list" id="attestList"></ul>
+      <div class="k" style="margin-bottom:6px">다른 스터디원 증빙 확인하기</div>
+      <div class="list" id="attestList"></div>
+      <p class="hint">내 증빙은 내가 확인할 수 없고, 한 사람당 한 번이에요. 확인은 취소되지 않아요.</p>
     </div>
   </section>
 
   <!-- ⑤ 정산 -->
-  <section id="tab-settle" style="display:none">
-    <div class="card">
-      <h2>회차 운영</h2>
-      <div class="hint">아래 3개는 등록 지갑 누구나 호출할 수 있습니다. 컨트랙트는 스스로 실행되지 않으므로 마감 후 한 사람이 눌러 주면 됩니다.</div>
-      <button class="pri" id="btnOpenRound">다음 회차 열기</button>
-      <button class="pri" id="btnSettle">회차 정산 (환급·분배·SBT)</button>
-      <button class="sec" id="btnFinalize">최종 정산 (개근 SBT·잔액 분배)</button>
+  <section data-screen="settle">
+    <h2 id="setH2">아직 정산된<br>회차가 없어요</h2>
+    <div class="chips" id="setChips"></div>
+    <div class="card" id="setCard">
+      <div class="split"><span>회차 몫 환급</span><b id="setRefund">-</b></div>
+      <div class="split"><span id="setShareLabel">결석자 몫 나눔</span><b style="color:var(--ok)" id="setShare">-</b></div>
+      <div class="split"><span>끝전 이월</span><b id="setRemain">-</b></div>
+      <div class="split total"><span>내 수령액</span><b id="setMine">-</b></div>
     </div>
+    <div class="badge" id="sbtBadge" style="display:none"><i></i><span id="sbtBadgeText"></span></div>
     <div class="card">
-      <h2 id="lastRoundTitle">회차 정산 결과</h2>
-      <table id="settleTable"><thead><tr><th>스터디원</th><th>판정</th><th class="r">확인</th><th class="r">환급</th></tr></thead><tbody></tbody></table>
-      <div class="kv"><span>몰수·이월 풀</span><b id="poolAmt">-</b></div>
-      <div class="kv"><span>출석자 1인 분배</span><b id="shareAmt">-</b></div>
+      <div class="t" style="margin-top:0" id="nextTitle">다음 회차</div>
+      <div class="d" id="nextDesc">-</div>
+    </div>
+    <div class="card" id="judgeCard" style="display:none">
+      <div class="k" style="margin-bottom:6px">스터디원별 판정</div>
+      <div class="list" id="judgeList"></div>
     </div>
     <div class="card" id="excuseCard" style="display:none">
-      <h2>공결 설정 <span class="badge warn">임시 · 배포자 전용</span></h2>
-      <div class="hint">기말 구현에서 DAO 투표(신청자 제외 과반)로 대체됩니다.</div>
-      <div class="grid2" style="margin-top:8px">
-        <input type="number" id="excuseRound" placeholder="회차" min="1">
-        <select id="excuseMember"></select>
+      <div class="row"><span class="k">공결 설정</span><span class="chip warn">임시 · 배포자 전용</span></div>
+      <div class="hint">기말 구현에서 DAO 투표(신청자 제외 과반)로 대체돼요.</div>
+      <div class="row"><input type="number" id="excuseRound" placeholder="회차" min="1"><select id="excuseMember"></select></div>
+      <button class="btn ghost small" id="btnExcuse" type="button">공결로 처리</button>
+    </div>
+  </section>
+
+  <!-- ⑥ 기록 -->
+  <section data-screen="log">
+    <h2>블록체인에<br>남은 기록</h2>
+    <div class="card"><div class="log" id="eventLog">아직 연결되지 않았어요</div></div>
+    <div class="card">
+      <div class="k">컨트랙트 주소</div>
+      <div class="list" style="margin-top:6px">
+        <div class="li"><span>에스크로<small id="cEscrow">-</small></span></div>
+        <div class="li"><span>SDT 토큰<small id="cSdt">-</small></span></div>
+        <div class="li"><span>출석 SBT<small id="cSbt">-</small></span></div>
       </div>
-      <button class="sec" id="btnExcuse">공결 설정</button>
+      <div class="hint" id="netLabel">-</div>
     </div>
   </section>
+</div>
 
-  <!-- 로그 -->
-  <section id="tab-log" style="display:none">
-    <div class="card">
-      <h2>온체인 이벤트</h2>
-      <div class="log" id="eventLog">-</div>
-    </div>
-    <div class="card">
-      <h2>컨트랙트</h2>
-      <div class="kv"><span>에스크로</span><span class="mono" id="cEscrow">-</span></div>
-      <div class="kv"><span>SDT</span><span class="mono" id="cSdt">-</span></div>
-      <div class="kv"><span>SBT</span><span class="mono" id="cSbt">-</span></div>
-    </div>
-  </section>
-
-  <div class="card demo" id="demoPanel" style="display:none">
-    <h2>데모 시간 조작 (로컬 Hardhat 전용)</h2>
-    <div class="row">
-      <button class="sm" data-ff="60">+1분</button>
-      <button class="sm" data-ff="600">+10분</button>
-      <button class="sm" data-ff="3600">+1시간</button>
-      <button class="sm" data-ff="86400">+1일</button>
-      <button class="sm" data-ff="604800">+7일</button>
-    </div>
+<div class="bottom">
+  <div class="demo" id="demoPanel">
+    <span>체인 시각 앞당기기</span>
+    <button data-ff="60" type="button">+1분</button><button data-ff="600" type="button">+10분</button>
+    <button data-ff="3600" type="button">+1시간</button><button data-ff="86400" type="button">+1일</button>
+    <button data-ff="604800" type="button">+7일</button>
   </div>
+  <div class="cta" id="cta"><button class="btn" id="ctaBtn" type="button">지갑 연결</button></div>
+  <nav>
+    <button data-tab="home" class="on" type="button">홈<i class="dot"></i></button>
+    <button data-tab="deposit" type="button">예치<i class="dot"></i></button>
+    <button data-tab="proof" type="button">증빙<i class="dot"></i></button>
+    <button data-tab="attest" type="button">확인<i class="dot"></i></button>
+    <button data-tab="settle" type="button">정산<i class="dot"></i></button>
+    <button data-tab="log" type="button">기록</button>
+  </nav>
 </div>
 
 <script src="./ethers.umd.min.js"></script>
@@ -226,26 +288,23 @@
 (() => {
   const CFG = window.APP_CONFIG || null;
   const ABI = window.APP_ABI || null;
-  const MODULES = ["", "Blockchain Cryptography", "Blockchain Storage", "Ethereum State Machine",
-    "Smart Contract Basics", "Solidity Language", "Solidity Core", "Solidity Governance"];
-  const STATE = ["모집 중(예치 대기)", "진행 중", "취소됨", "종료(최종 정산)"];
-  const STATE_CLS = ["warn", "ok", "bad", ""];
+  const MODULES = ["", "Blockchain Cryptography", "Blockchain Storage", "Ethereum", "Smart Contract Basics", "Solidity", "Solidity Core", "Solidity Governance"];
   const ATT = ["대기", "출석", "지각", "결석", "공결"];
-  const ATT_CLS = ["", "ok", "warn", "bad", ""];
-  const PHASE = ["회차 없음", "증빙 제출", "지각 제출", "상호 확인", "정산 대기", "정산 완료"];
+  const ATT_CHIP = ["mute", "ok", "warn", "warn", ""];
+  const AV = ["#4F6EF7", "#7C8CF8", "#A78BFA", "#F59E0B", "#1FB07A", "#F2583E", "#0EA5E9", "#EC4899"];
   const ERR_KO = {
-    NotMember: "등록된 스터디원 지갑이 아닙니다", WrongState: "지금 상태에서는 할 수 없는 동작입니다",
-    AlreadyDeposited: "이미 예치했습니다", DepositWindowClosed: "예치 기한이 지났습니다",
-    DepositWindowOpen: "아직 예치 기한이 남아 있습니다", RoundNotOpen: "열린 회차가 없습니다",
-    PreviousRoundNotSettled: "이전 회차를 먼저 정산해야 합니다", AllRoundsDone: "모든 회차가 끝났습니다",
-    ProofAlreadySubmitted: "이번 회차 증빙을 이미 제출했습니다", ProofWindowClosed: "증빙 제출 기간이 끝났습니다",
-    EmptyHash: "해시가 비어 있습니다", SelfAttest: "본인 증빙은 확인할 수 없습니다", NoProof: "아직 증빙을 제출하지 않은 스터디원입니다",
-    AlreadyAttested: "이미 확인했습니다", AttestWindowClosed: "확인 기간이 끝났습니다",
-    TooEarlyToSettle: "확인 마감 전에는 정산할 수 없습니다", AlreadySettled: "이미 정산된 회차입니다",
-    NotAdmin: "배포자만 할 수 있습니다", InvalidRound: "회차 번호가 잘못되었습니다",
-    NotAllSettled: "모든 회차 정산 후에만 최종 정산할 수 있습니다", NothingToWithdraw: "인출할 금액이 없습니다",
-    ERC20InsufficientAllowance: "승인(approve) 금액이 부족합니다. 1번 승인을 먼저 눌러 주세요",
-    ERC20InsufficientBalance: "SDT 잔액이 부족합니다. 테스트 SDT를 받아 주세요",
+    NotMember: "등록된 스터디원 지갑이 아니에요", WrongState: "지금 상태에서는 할 수 없는 동작이에요",
+    AlreadyDeposited: "이미 예치했어요", DepositWindowClosed: "예치 기한이 지났어요",
+    DepositWindowOpen: "아직 예치 기한이 남아 있어요", RoundNotOpen: "열린 회차가 없어요",
+    PreviousRoundNotSettled: "이전 회차를 먼저 정산해야 해요", AllRoundsDone: "모든 회차가 끝났어요",
+    ProofAlreadySubmitted: "이번 회차 증빙을 이미 제출했어요", ProofWindowClosed: "증빙 제출 기간이 끝났어요",
+    EmptyHash: "해시가 비어 있어요", SelfAttest: "내 증빙은 내가 확인할 수 없어요", NoProof: "아직 증빙을 제출하지 않은 스터디원이에요",
+    AlreadyAttested: "이미 확인했어요", AttestWindowClosed: "확인 기간이 끝났어요",
+    TooEarlyToSettle: "확인 마감 전에는 정산할 수 없어요", AlreadySettled: "이미 정산된 회차예요",
+    NotAdmin: "배포자만 할 수 있어요", InvalidRound: "회차 번호가 잘못됐어요",
+    NotAllSettled: "모든 회차를 정산한 뒤에 최종 정산할 수 있어요", NothingToWithdraw: "인출할 금액이 없어요",
+    ERC20InsufficientAllowance: "SDT 사용 승인이 부족해요. 다시 눌러 승인부터 진행해 주세요",
+    ERC20InsufficientBalance: "SDT 잔액이 부족해요. 테스트 SDT를 먼저 받아 주세요",
   };
 
   const $ = (id) => document.getElementById(id);
@@ -254,37 +313,45 @@
   const ts = (t) => t ? new Date(Number(t) * 1000).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
   const remain = (deadline, now) => {
     const d = Number(deadline) - now;
-    if (d <= 0) return "마감";
+    if (d <= 0) return "마감 지남";
     const h = Math.floor(d / 3600), m = Math.floor((d % 3600) / 60);
     return h >= 24 ? `${Math.floor(h / 24)}일 ${h % 24}시간 남음` : h > 0 ? `${h}시간 ${m}분 남음` : `${m}분 남음`;
   };
+  const name = (members, a) => { const i = members.findIndex(x => x.toLowerCase() === a.toLowerCase()); return i >= 0 ? "스터디원 " + String.fromCharCode(65 + i) : short(a); };
+  const av = (i, dim) => `<span class="av" style="background:${dim ? "#D1D6DB" : AV[i % AV.length]}">${String.fromCharCode(65 + i)}</span>`;
 
-  let provider, signer, me, escrow, sdt, sbt, ifaceAll, demo = false, timer;
-  let snapshot = {};
+  let provider, signer, me, escrow, sdt, sbt, ifaceAll, demo = false, timer, connected = false;
+  let S = {};               // 마지막 조회 스냅샷
+  let pendingHash = null, pendingFile = null;
+  const steps = { s1: false, s2: false };
+  let ctaAction = null;
 
+  // ---------- 메시지·트랜잭션 ----------
   function msg(text, cls) {
     const el = $("msg"); el.className = "msg " + (cls || ""); el.textContent = text;
     if (cls === "ok") setTimeout(() => { if (el.textContent === text) el.className = "msg"; }, 6000);
+    if (cls) window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function explain(e) {
     const data = e?.data || e?.info?.error?.data || e?.error?.data;
     if (ifaceAll && typeof data === "string" && data.startsWith("0x") && data.length >= 10) {
       try { const p = ifaceAll.parseError(data); if (p) return ERR_KO[p.name] || p.name; } catch (_) {}
     }
-    if (e?.code === "ACTION_REJECTED") return "지갑에서 서명을 거부했습니다";
+    if (e?.code === "ACTION_REJECTED") return "지갑에서 서명을 거부했어요";
     const m = e?.shortMessage || e?.reason || e?.message || String(e);
     for (const k of Object.keys(ERR_KO)) if (m.includes(k)) return ERR_KO[k];
     return m.length > 200 ? m.slice(0, 200) + "…" : m;
   }
   async function tx(label, fn) {
     try {
-      msg(label + " 서명 요청 중…", "info");
+      msg(label + " 서명을 기다리고 있어요", "info");
       const t = await fn();
-      msg(label + " 처리 중… " + short(t.hash), "info");
+      msg(label + " 처리 중 " + short(t.hash), "info");
       const r = await t.wait();
       msg(label + " 완료 (블록 " + r.blockNumber + ")", "ok");
       await refresh();
-    } catch (e) { console.error(e); msg(label + " 실패: " + explain(e), "err"); }
+      return true;
+    } catch (e) { console.error(e); msg(label + " 실패: " + explain(e), "err"); return false; }
   }
 
   // ---------- 연결 ----------
@@ -293,22 +360,22 @@
     const opt = (v, t) => { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.appendChild(o); };
     opt(0, "배포자(관리자) · 계정0");
     (CFG?.members || []).forEach((m, i) => opt(i + 1, `스터디원 ${String.fromCharCode(65 + i)} · ${short(m)}`));
+    sel.value = CFG?.members?.length ? "1" : "0";
   }
-  $("mode").addEventListener("change", () => {
-    $("demoAccount").style.display = $("mode").value === "demo" ? "" : "none";
-  });
+  $("mode").addEventListener("change", () => { $("demoAccount").style.display = $("mode").value === "demo" ? "" : "none"; });
   $("btnConnect").addEventListener("click", connect);
-  $("demoAccount").addEventListener("change", () => { if (demo) connect(); });
+  $("demoAccount").addEventListener("change", () => { if (connected && demo) connect(); });
+  $("walletChip").addEventListener("click", () => $("sheet").classList.toggle("on"));
 
   async function connect() {
     try {
-      if (!CFG || !ABI) throw new Error("web/config.js 또는 web/abi.js가 없습니다. 먼저 npm run deploy:local 을 실행하세요.");
+      if (!CFG || !ABI) throw new Error("web/config.js 또는 web/abi.js가 없어요. 먼저 npm run deploy:local 을 실행해 주세요.");
       demo = $("mode").value === "demo";
       if (demo) {
         provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
         signer = await provider.getSigner(Number($("demoAccount").value));
       } else {
-        if (!window.ethereum) throw new Error("MetaMask가 설치되어 있지 않습니다.");
+        if (!window.ethereum) throw new Error("MetaMask가 설치되어 있지 않아요.");
         provider = new ethers.BrowserProvider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
         signer = await provider.getSigner();
@@ -318,17 +385,20 @@
       me = await signer.getAddress();
       const net = await provider.getNetwork();
       if (Number(net.chainId) !== CFG.chainId) {
-        msg(`지갑 네트워크(chainId ${net.chainId})가 배포 네트워크(${CFG.network}, chainId ${CFG.chainId})와 다릅니다.`, "err");
+        msg(`지갑 네트워크(chainId ${net.chainId})가 배포 네트워크(${CFG.network}, chainId ${CFG.chainId})와 달라요. 지갑에서 네트워크를 바꿔 주세요.`, "err");
       }
       escrow = new ethers.Contract(CFG.escrow, ABI.StudyEscrow, signer);
       sdt = new ethers.Contract(CFG.sdt, ABI.MockSDT, signer);
       sbt = new ethers.Contract(CFG.sbt, ABI.AttendanceSBT, signer);
       ifaceAll = new ethers.Interface([...ABI.StudyEscrow, ...ABI.MockSDT.filter(f => f.type === "error"), ...ABI.AttendanceSBT.filter(f => f.type === "error")]);
-      $("netLabel").textContent = `${CFG.network} · chainId ${net.chainId}`;
-      $("me").textContent = me;
-      $("demoPanel").style.display = demo ? "" : "none";
+      connected = true;
+      $("walletChip").classList.remove("off");
+      $("walletText").textContent = short(me);
+      $("sheet").classList.remove("on");
+      $("demoPanel").classList.toggle("on", demo);
       $("cEscrow").textContent = CFG.escrow; $("cSdt").textContent = CFG.sdt; $("cSbt").textContent = CFG.sbt;
-      msg("연결됨: " + short(me), "ok");
+      $("netLabel").textContent = `${CFG.network} · chainId ${net.chainId}`;
+      msg("연결됐어요 " + short(me), "ok");
       clearInterval(timer); timer = setInterval(() => refresh().catch(() => {}), 15000);
       await refresh();
     } catch (e) { console.error(e); msg("연결 실패: " + explain(e), "err"); }
@@ -337,124 +407,270 @@
   // ---------- 조회 ----------
   async function refresh() {
     if (!escrow) return;
-    const [members, cfg, state, curRound, depCount, block] = await Promise.all([
+    const [members, cfg, state, curRound, depCount, block, admin, createdAt] = await Promise.all([
       escrow.getMembers(), escrow.config(), escrow.state(), escrow.currentRound(),
-      escrow.depositedCount(), provider.getBlock("latest"),
+      escrow.depositedCount(), provider.getBlock("latest"), escrow.admin(), escrow.createdAt(),
     ]);
     const now = Number(block.timestamp);
-    const r = Number(curRound);
+    const r = Number(curRound), st = Number(state);
     const rounds = Number(cfg.rounds), threshold = Number(cfg.threshold);
-    const isMember = members.map(a => a.toLowerCase()).includes(me.toLowerCase());
-    const admin = await escrow.admin();
+    const myIdx = members.findIndex(a => a.toLowerCase() === me.toLowerCase());
+    const isMember = myIdx >= 0;
     const isAdmin = admin.toLowerCase() === me.toLowerCase();
-    $("roleBadge").style.display = ""; $("roleBadge").textContent = isMember ? "스터디원" : isAdmin ? "배포자" : "비멤버";
-    $("roleBadge").className = "badge " + (isMember ? "ok" : isAdmin ? "warn" : "bad");
-    $("excuseCard").style.display = isAdmin ? "" : "none";
-
-    const [sdtBal, locked, bal, att, sbtBal, createdAt] = await Promise.all([
-      sdt.balanceOf(me), escrow.lockedOf(me), escrow.balanceOf(me), escrow.attendCount(me), sbt.balanceOf(me), escrow.createdAt(),
+    const [sdtBal, locked, bal, att, sbtBal, allowance] = await Promise.all([
+      sdt.balanceOf(me), escrow.lockedOf(me), escrow.balanceOf(me), escrow.attendCount(me), sbt.balanceOf(me), sdt.allowance(me, CFG.escrow),
     ]);
-    $("sdtBal").textContent = fmt(sdtBal);
-    $("locked").textContent = fmt(locked) + " SDT";
-    $("withdrawable").textContent = fmt(bal) + " SDT";
-    $("attendCount").textContent = `${att} / ${rounds}회`;
-    $("sbtCount").textContent = `${sbtBal}개`;
-    $("btnWithdraw").disabled = bal === 0n;
-    $("stateBadge").textContent = STATE[Number(state)]; $("stateBadge").className = "badge " + STATE_CLS[Number(state)];
-
-    // 회차
     const rd = r > 0 ? await escrow.getRound(r) : null;
     const phase = Number(await escrow.phase());
-    $("roundProgress").textContent = `${r} / ${rounds}회차`;
-    $("roundBar").style.width = `${Math.round(100 * r / rounds)}%`;
-    $("moduleName").textContent = r > 0 ? `모듈 ${r} · ${MODULES[r] || ""}` : "아직 회차가 열리지 않았습니다";
-    $("proofModule").textContent = $("moduleName").textContent;
-    $("phaseBadge").textContent = PHASE[phase];
-    $("phaseBadge").className = "badge " + (phase === 4 ? "warn" : phase === 5 ? "" : "ok");
-    $("dlProof").textContent = rd ? `${ts(rd.proofDeadline)} (${remain(rd.proofDeadline, now)})` : "-";
-    $("dlLate").textContent = rd ? `${ts(rd.lateDeadline)} (${remain(rd.lateDeadline, now)})` : "-";
-    $("dlAttest").textContent = rd ? `${ts(rd.attestDeadline)} (${remain(rd.attestDeadline, now)})` : "-";
-    $("chainTime").textContent = "체인 시각 " + new Date(now * 1000).toLocaleString("ko-KR");
-
-    // 예치
-    const total = cfg.perRound * BigInt(rounds);
-    $("depositTotal").textContent = fmt(total) + " SDT";
-    $("depositDesc").textContent = `${rounds}회 × 회당 ${fmt(cfg.perRound)} SDT · 전원이 예치하면 1회차가 열립니다`;
-    $("depositCount").textContent = `${depCount} / ${members.length}명`;
     const depFlags = await Promise.all(members.map(a => escrow.deposited(a)));
-    $("depositList").innerHTML = members.map((a, i) =>
-      `<li><span class="who">스터디원 ${String.fromCharCode(65 + i)}${a.toLowerCase() === me.toLowerCase() ? " (나)" : ""}<small>${a}</small></span>` +
-      `<span class="badge ${depFlags[i] ? "ok" : "warn"}">${depFlags[i] ? "예치 완료" : "미예치"}</span></li>`).join("");
+    const myDep = isMember && depFlags[myIdx];
+    const total = cfg.perRound * BigInt(rounds);
     const depDeadline = Number(createdAt) + Number(cfg.depositWindow);
-    $("dlDeposit").textContent = `${ts(depDeadline)} (${remain(depDeadline, now)})`;
-    const created = Number(state) === 0;
-    const myDep = isMember && depFlags[members.findIndex(a => a.toLowerCase() === me.toLowerCase())];
-    $("btnApprove").disabled = !(created && isMember && !myDep);
-    $("btnDeposit").disabled = !(created && isMember && !myDep);
-    $("btnCancel").disabled = !(created && now > depDeadline);
-
-    // 증빙·확인
     const mrs = r > 0 ? await Promise.all(members.map(a => escrow.getMemberRound(r, a))) : [];
-    const myIdx = members.findIndex(a => a.toLowerCase() === me.toLowerCase());
-    const mine = myIdx >= 0 && r > 0 ? mrs[myIdx] : null;
-    const hasProof = mine && mine.proofHash !== ethers.ZeroHash;
-    $("myProofBadge").textContent = !mine ? "-" : hasProof ? (mine.late ? "제출(지각)" : "제출 완료") : "미제출";
-    $("myProofBadge").className = "badge " + (!mine ? "" : hasProof ? (mine.late ? "warn" : "ok") : "bad");
-    $("myAttestCount").textContent = mine ? `${mine.attestCount} / ${threshold}명` : "-";
-    $("btnSubmitProof").disabled = !(isMember && r > 0 && !rd.settled && phase <= 2 && !hasProof && pendingHash);
-    $("proofHint").textContent = phase === 2 ? "증빙 마감이 지났습니다. 지금 제출하면 지각(회차 몫 50% 환급)으로 처리됩니다." : "";
-    if (mine && hasProof) {
-      const atts = await escrow.getAttesters(r, me);
-      $("myAttesters").innerHTML = atts.length ? atts.map(a => `<li><span class="who">스터디원 ${String.fromCharCode(65 + members.findIndex(x => x.toLowerCase() === a.toLowerCase()))}<small>${a}</small></span><span class="badge ok">확인함</span></li>`).join("") : `<li><span class="hint">아직 없음</span></li>`;
-    } else $("myAttesters").innerHTML = `<li><span class="hint">없음</span></li>`;
-
-    $("thresholdBadge").textContent = `${threshold} / ${members.length - 1}명 확인 시 출석`;
+    const mine = isMember && r > 0 ? mrs[myIdx] : null;
+    const hasProof = !!(mine && mine.proofHash !== ethers.ZeroHash);
     const attestedByMe = r > 0 ? await Promise.all(members.map(a => escrow.hasAttested(r, a, me))) : [];
-    $("attestList").innerHTML = r === 0 ? `<li><span class="hint">열린 회차가 없습니다</span></li>` : members.map((a, i) => {
-      if (a.toLowerCase() === me.toLowerCase()) return "";
+    const myAttesters = hasProof ? await escrow.getAttesters(r, me) : [];
+
+    // 정산된 회차 전부 (홈 목록·정산 화면)
+    const settledN = r > 0 ? (rd.settled ? r : r - 1) : 0;
+    const hist = [];
+    for (let k = settledN; k >= 1; k--) {
+      const krd = k === r ? rd : await escrow.getRound(k);
+      const kmrs = k === r ? mrs : await Promise.all(members.map(a => escrow.getMemberRound(k, a)));
+      const present = Number(krd.presentCount);
+      const share = present > 0 ? krd.pool / BigInt(present) : 0n;
+      const remainder = present > 0 ? krd.pool - share * BigInt(present) : krd.pool;
+      const rows = members.map((a, i) => {
+        const s = Number(kmrs[i].status);
+        const refund = s === 1 || s === 4 ? cfg.perRound : s === 2 ? cfg.perRound / 2n : 0n;
+        return { addr: a, i, status: s, attestCount: Number(kmrs[i].attestCount), refund, share: s === 1 ? share : 0n, got: refund + (s === 1 ? share : 0n) };
+      });
+      const count = [0, 0, 0, 0, 0]; rows.forEach(x => count[x.status]++);
+      hist.push({ round: k, rd: krd, rows, present, share, remainder, count, mine: isMember ? rows[myIdx] : null });
+    }
+    const returned = hist.reduce((acc, h) => acc + (h.mine ? h.mine.got : 0n), 0n);
+
+    S = { members, cfg, st, r, rd, rounds, threshold, now, myIdx, isMember, isAdmin, sdtBal, locked, bal, att: Number(att), sbtBal: Number(sbtBal),
+          allowance, phase, depFlags, depCount: Number(depCount), myDep, total, depDeadline, mrs, mine, hasProof, attestedByMe, myAttesters, hist, returned, settledN };
+    renderAll();
+    await loadEvents();
+  }
+
+  // ---------- 렌더 ----------
+  function renderAll() { renderHome(); renderDeposit(); renderProof(); renderAttest(); renderSettle(); renderCta(); }
+
+  function renderHome() {
+    const { st, r, rd, rounds, threshold, now, isMember, locked, bal, phase, myDep, hasProof, mine, hist, returned, settledN, depCount, members } = S;
+    const need = members.length - depCount;
+    let h2;
+    if (!isMember) h2 = S.isAdmin ? "배포자 지갑이에요<br><span>운영</span>만 할 수 있어요" : "등록된 스터디원<br>지갑이 아니에요";
+    else if (st === 2) h2 = "스터디가<br><span>취소</span>됐어요";
+    else if (st === 3) h2 = "스터디가<br><span>끝났어요</span>";
+    else if (st === 0) h2 = myDep ? `<span>${need}명</span>이 더 넣으면<br>시작돼요` : "보증금을 걸면<br>스터디가 시작돼요";
+    else if (r === 0) h2 = "<span>1회차</span>를<br>열 수 있어요";
+    else if (rd.settled) h2 = r < rounds ? "다음 회차를<br>열 수 있어요" : "최종 정산만<br>남았어요";
+    else if (phase <= 2 && !hasProof) h2 = "이번 주 할 일이<br><span>하나</span> 남았어요";
+    else if (hasProof && Number(mine.attestCount) < threshold && phase <= 3) h2 = `확인 <span>${threshold - Number(mine.attestCount)}개</span>를 받으면<br>출석이에요`;
+    else if (hasProof && Number(mine.attestCount) >= threshold && phase <= 3) h2 = "출석 요건을<br><span>채웠어요</span>";
+    else if (!hasProof && phase === 3) h2 = "이번 회차는<br><span>결석</span>이에요";
+    else h2 = "정산을 누르면<br>돈이 돌아와요";
+    $("homeH2").innerHTML = h2;
+    $("locked").textContent = fmt(locked);
+    $("seg").innerHTML = Array.from({ length: rounds }, (_, i) =>
+      `<i class="${i < settledN ? "on" : (i === r - 1 && !rd.settled) ? "now" : ""}"></i>`).join("");
+    $("segSub").textContent = st === 0 ? `예치 ${depCount} / ${members.length}명 · 시작 전` :
+      st === 1 ? `${settledN}회 정산 · ${r > 0 && !rd.settled ? r + "회차 진행 중" : r < rounds ? "다음 회차 대기" : "최종 정산 대기"}` :
+      st === 2 ? "취소됨 · 전액 환불" : `${settledN}회 전부 정산 · 종료`;
+
+    // 할 일 카드
+    let chip = "mute", chipText = "대기", title = "", desc = "";
+    if (st === 0) {
+      chip = myDep ? "ok" : "warn"; chipText = myDep ? "예치 완료" : remain(S.depDeadline, now);
+      title = "보증금 예치"; desc = myDep ? `${need}명이 더 넣으면 1회차가 자동으로 열려요.` : `${fmt(S.total)} SDT를 넣으면 돼요. 전원이 넣으면 1회차가 바로 열려요.`;
+    } else if (st === 1 && r > 0 && !rd.settled) {
+      title = `모듈 ${r} · ${MODULES[r] || ""}`;
+      if (phase === 1) { chip = "warn"; chipText = "마감 " + remain(rd.proofDeadline, now); desc = hasProof ? "증빙을 냈어요. 이제 다른 스터디원 증빙을 확인해 주세요." : "진도 100% 화면을 단체방에 올린 뒤, 같은 캡처를 제출하면 돼요."; }
+      else if (phase === 2) { chip = "warn"; chipText = "지각 접수 " + remain(rd.lateDeadline, now); desc = hasProof ? "증빙을 냈어요. 다른 스터디원 증빙을 확인해 주세요." : "제출 마감이 지났어요. 지금 내면 지각으로 접수되고 회차 몫의 절반만 돌아와요."; }
+      else if (phase === 3) { chip = ""; chipText = "확인 " + remain(rd.attestDeadline, now); desc = "다른 스터디원 증빙을 확인해 주세요. 확인 3개를 받아야 출석이에요."; }
+      else { chip = "ok"; chipText = "정산 가능"; desc = "확인 마감이 지났어요. 누구든 정산을 누르면 환급과 분배가 한 번에 처리돼요."; }
+    } else if (st === 1) {
+      chip = "ok"; chipText = r === 0 ? "시작" : "정산 완료"; title = r < rounds ? `모듈 ${r + 1} · ${MODULES[r + 1] || ""}` : "최종 정산";
+      desc = r < rounds ? "누가 열어도 같아요. 제출 마감은 여는 시각부터 정해진 기간 뒤예요." : "모든 회차가 정산됐어요. 최종 정산을 누르면 개근 배지와 잔액 분배가 처리돼요.";
+    } else { chipText = st === 2 ? "취소" : "종료"; title = st === 2 ? "스터디 취소" : "스터디 종료"; desc = bal > 0n ? "돌려받을 돈이 있어요. 아래에서 인출해 주세요." : "정산이 모두 끝났어요."; }
+    $("taskChip").className = "chip " + chip; $("taskChip").textContent = chipText;
+    $("taskTitle").textContent = title; $("taskDesc").textContent = desc;
+
+    // 돌려받은 돈
+    const rows = hist.slice(0, 4).map(h => {
+      const mineRow = h.mine; const stn = mineRow ? mineRow.status : 0;
+      const label = `${h.round}회차 · 출석 ${h.present}명${h.count[3] ? ` · 결석 ${h.count[3]}명` : ""}${h.count[2] ? ` · 지각 ${h.count[2]}명` : ""}`;
+      const right = !mineRow ? "" : mineRow.got > 0n ? `<span class="r ok">+${fmt(mineRow.got)}</span>` : `<span class="r warn">${ATT[stn]}</span>`;
+      return `<div class="li">${av(h.round - 1, true)}<span>${label}</span>${right}</div>`;
+    }).join("");
+    $("homeList").innerHTML = `<div class="li"><span>지금까지 돌려받은 돈</span><span class="r plus">+${fmt(returned)} SDT</span></div>` +
+      (rows || `<div class="li"><span class="k">정산된 회차가 생기면 여기에 쌓여요</span></div>`);
+    $("btnWithdraw").style.display = bal > 0n ? "" : "none";
+    $("btnWithdraw").textContent = `인출 가능 ${fmt(bal)} SDT · 내 지갑으로 보내기`;
+  }
+
+  function renderDeposit() {
+    const { st, members, depFlags, depCount, myDep, total, cfg, rounds, depDeadline, now, sdtBal, isMember } = S;
+    $("depH2").innerHTML = st !== 0 ? "예치는<br><span>끝났어요</span>" : myDep ? "내 보증금은<br>들어가 있어요" : "보증금을 걸면<br>스터디가 시작돼요";
+    $("depTotal").textContent = fmt(total);
+    $("depDesc").textContent = `${rounds}회 × ${fmt(cfg.perRound)} SDT. 출석할 때마다 ${fmt(cfg.perRound)} SDT씩 돌아오고, 결석한 사람 몫은 출석한 사람들이 나눠 가져요.`;
+    $("depNote").textContent = st === 0
+      ? `${ts(depDeadline)}까지 ${members.length}명이 다 넣지 않으면 넣은 돈은 전액 돌려받아요. (${remain(depDeadline, now)})`
+      : st === 2 ? "예치 기한 안에 전원이 넣지 않아 취소됐어요. 넣은 돈은 인출할 수 있어요." : "전원이 예치해서 스터디가 시작됐어요.";
+    $("depChip").textContent = `${depCount} / ${members.length}명`;
+    $("depChip").className = "chip " + (depCount === members.length ? "ok" : "");
+    $("depList").innerHTML = members.map((a, i) =>
+      `<div class="li">${av(i, !depFlags[i])}<span>스터디원 ${String.fromCharCode(65 + i)}${i === S.myIdx ? " · 나" : ""}<small>${short(a)}</small></span>${depFlags[i] ? `<span class="done">완료</span>` : `<span class="r">아직</span>`}</div>`).join("");
+    $("sdtBal").textContent = fmt(sdtBal);
+    $("btnFaucet").disabled = !(demo || isMember);
+    $("btnCancel").style.display = st === 0 && now > depDeadline ? "" : "none";
+  }
+
+  function renderProof() {
+    const { r, rd, phase, hasProof, mine, threshold, now, isMember, myAttesters, members } = S;
+    const open = r > 0 && !rd.settled;
+    $("topStudy").textContent = r > 0 ? `${r}회차 · 모듈 ${r}` : "이더리움 스터디";
+    $("proofH2").innerHTML = !open ? "지금은 낼<br>증빙이 없어요" : hasProof ? `증빙이<br><span>기록됐어요</span>` : "캡처를 올리면<br>해시만 기록돼요";
+    const setStep = (id, done, em) => { $(id).querySelector("b").className = done ? "" : "todo"; const e = $(id).querySelector("em"); if (e) e.textContent = em; };
+    if (hasProof) {
+      setStep("step1", true, "완료"); setStep("step2", true, "완료"); setStep("step3", true, ts(mine.proofAt));
+      $("step3Text").textContent = mine.late ? "파일 제출 · 지각 접수" : "파일 제출";
+      $("proofHash").className = "hash"; $("proofHash").textContent = mine.proofHash;
+    } else {
+      setStep("step1", steps.s1, steps.s1 ? "체크함" : "눌러서 체크"); setStep("step2", steps.s2, steps.s2 ? "체크함" : "눌러서 체크");
+      setStep("step3", !!pendingHash, pendingFile ? "" : "탭해서 선택");
+      $("step3Text").textContent = pendingFile ? `파일 선택 · ${pendingFile}` : "파일 선택";
+      $("proofHash").className = "hash" + (pendingHash ? "" : " empty"); $("proofHash").textContent = pendingHash || "파일을 고르면 SHA-256 값이 여기에 계산돼요";
+    }
+    if (open) {
+      const late = phase === 2;
+      $("proofDlChip").textContent = late ? "지각 마감" : "제출 마감"; $("proofDlChip").className = "chip " + (phase <= 2 ? "warn" : "mute");
+      $("proofDl").textContent = `${ts(late ? rd.lateDeadline : rd.proofDeadline)} · ${remain(late ? rd.lateDeadline : rd.proofDeadline, now)}`;
+      $("proofLateHint").textContent = late ? "제출 마감이 지났어요. 지금 내면 지각으로 접수되고 회차 몫의 절반만 돌아와요." : "마감 후 지각 기간 안에 내면 지각으로 접수되고, 회차 몫의 절반만 돌려받아요.";
+    } else { $("proofDlChip").textContent = "회차 없음"; $("proofDlChip").className = "chip mute"; $("proofDl").textContent = "-"; $("proofLateHint").textContent = ""; }
+    $("myAttCard").style.display = hasProof ? "" : "none";
+    if (hasProof) {
+      $("myAttChip").textContent = `${mine.attestCount} / ${threshold}`; $("myAttChip").className = "chip " + (Number(mine.attestCount) >= threshold ? "ok" : "");
+      $("myAttesters").innerHTML = myAttesters.length ? myAttesters.map(a => { const i = members.findIndex(x => x.toLowerCase() === a.toLowerCase()); return `<div class="li">${av(i)}<span>${name(members, a)}</span><span class="done">확인함</span></div>`; }).join("")
+        : `<div class="li"><span class="k">아직 확인한 사람이 없어요</span></div>`;
+    }
+    $("step1").disabled = $("step2").disabled = hasProof || !open || !isMember;
+    $("proofFile").disabled = hasProof || !open || !isMember;
+  }
+
+  function renderAttest() {
+    const { r, rd, phase, threshold, hasProof, mine, now, members, mrs, attestedByMe, isMember, myIdx } = S;
+    const open = r > 0 && !rd.settled;
+    $("attH2").innerHTML = `확인 <span>${threshold}개</span>를 받으면<br>출석이에요`;
+    const n = hasProof ? Number(mine.attestCount) : 0;
+    const pct = Math.min(100, Math.round(100 * n / threshold));
+    $("ring").style.background = `conic-gradient(var(--accent) 0 ${pct}%, #2C3340 ${pct}% 100%)`;
+    $("ringN").textContent = n; $("ringD").textContent = "/" + threshold;
+    $("ringText").textContent = !open ? "열린 회차가 없어요" : !hasProof ? "증빙을 먼저 제출해 주세요" : n >= threshold ? "출석 요건을 채웠어요" : `${threshold - n}명만 더 확인하면 돼요`;
+    $("ringSub").textContent = open ? `확인 마감 ${ts(rd.attestDeadline)} · ${remain(rd.attestDeadline, now)}` : "-";
+    const canAttest = isMember && open && phase <= 3;
+    $("attestList").innerHTML = !open ? `<div class="li"><span class="k">열린 회차가 없어요</span></div>` : members.map((a, i) => {
+      if (i === myIdx) return "";
       const x = mrs[i]; const p = x.proofHash !== ethers.ZeroHash;
-      const st = !p ? `<span class="badge bad">증빙 미제출</span>` :
-        attestedByMe[i] ? `<span class="badge ok">확인함</span>` :
-        `<button class="sm pri" data-attest="${a}" ${(!isMember || phase > 3 || rd.settled) ? "disabled" : ""}>확인</button>`;
-      return `<li><span class="who">스터디원 ${String.fromCharCode(65 + i)} <small>${p ? short(x.proofHash) + (x.late ? " · 지각" : "") : ""} 확인 ${x.attestCount}/${threshold}</small></span>${st}</li>`;
+      const right = !p ? `<button class="sbtn" disabled type="button">증빙 없음</button>` : attestedByMe[i] ? `<span class="done">확인함</span>` :
+        `<button class="sbtn" data-attest="${a}" type="button" ${canAttest ? "" : "disabled"}>확인</button>`;
+      return `<div class="li">${av(i, !p)}<span>스터디원 ${String.fromCharCode(65 + i)}<small>${p ? short(x.proofHash) + (x.late ? " · 지각" : "") + ` · 확인 ${x.attestCount}/${threshold}` : "미제출"}</small></span>${right}</div>`;
     }).join("");
     document.querySelectorAll("[data-attest]").forEach(b => b.onclick = () => tx("확인 서명", () => escrow.attest(b.dataset.attest)));
+  }
 
-    // 정산
-    const active = Number(state) === 1;
-    $("btnOpenRound").disabled = !(active && (r === 0 || rd.settled) && r < rounds);
-    $("btnSettle").disabled = !(active && r > 0 && !rd.settled && phase === 4);
-    $("btnFinalize").disabled = !(active && r === rounds && rd.settled);
-    const showRound = r > 0 && rd.settled ? r : r > 1 ? r - 1 : 0;
-    if (showRound > 0) {
-      const srd = showRound === r ? rd : await escrow.getRound(showRound);
-      const smrs = showRound === r ? mrs : await Promise.all(members.map(a => escrow.getMemberRound(showRound, a)));
-      $("lastRoundTitle").textContent = `${showRound}회차 정산 결과`;
-      $("settleTable").querySelector("tbody").innerHTML = members.map((a, i) => {
-        const x = smrs[i]; const s = Number(x.status);
-        const refund = s === 1 || s === 4 ? cfg.perRound : s === 2 ? cfg.perRound / 2n : 0n;
-        const share = s === 1 && srd.presentCount > 0n ? srd.pool / srd.presentCount : 0n;
-        return `<tr><td>스터디원 ${String.fromCharCode(65 + i)}${a.toLowerCase() === me.toLowerCase() ? " (나)" : ""}</td><td><span class="badge ${ATT_CLS[s]}">${ATT[s]}</span></td><td class="r">${x.attestCount}</td><td class="r">${fmt(refund + share)}</td></tr>`;
-      }).join("");
-      $("poolAmt").textContent = fmt(srd.pool) + " SDT";
-      $("shareAmt").textContent = srd.presentCount > 0n ? fmt(srd.pool / srd.presentCount) + " SDT" : "출석자 없음 · 다음 회차 이월";
+  function renderSettle() {
+    const { st, r, rd, rounds, hist, cfg, isMember, isAdmin, members, sbtBal } = S;
+    const last = hist[0];
+    if (!last) {
+      $("setH2").innerHTML = "아직 정산된<br>회차가 없어요"; $("setChips").innerHTML = "";
+      $("setRefund").textContent = $("setShare").textContent = $("setRemain").textContent = $("setMine").textContent = "-";
+      $("sbtBadge").style.display = "none"; $("judgeCard").style.display = "none";
     } else {
-      $("lastRoundTitle").textContent = "회차 정산 결과";
-      $("settleTable").querySelector("tbody").innerHTML = `<tr><td colspan="4" class="hint">아직 정산된 회차가 없습니다</td></tr>`;
-      $("poolAmt").textContent = "-"; $("shareAmt").textContent = "-";
+      const m = last.mine;
+      $("setH2").innerHTML = !m ? `${last.round}회차<br>정산 결과예요` : m.got > 0n ? `${last.round}회차<br><span>${fmt(m.got)} SDT</span>가 돌아왔어요` : `${last.round}회차는<br><span>${ATT[m.status]}</span>이에요`;
+      $("setChips").innerHTML = [[1, "출석", "ok"], [2, "지각", "warn"], [3, "결석", "warn"], [4, "공결", ""]].filter(([k]) => last.count[k]).map(([k, t, c]) => `<span class="chip ${c}">${t} ${last.count[k]}명</span>`).join("");
+      $("setRefund").textContent = m ? `${fmt(m.refund)} SDT` : "-";
+      $("setShareLabel").textContent = last.present ? `결석·지각 몫 나눔 (${fmt(last.rd.pool)} ÷ ${last.present})` : "결석·지각 몫 (출석자 없음 · 이월)";
+      $("setShare").textContent = m ? `+${fmt(m.share)} SDT` : "-";
+      $("setRemain").textContent = `${fmt(last.remainder)} SDT`;
+      $("setMine").textContent = m ? `${fmt(m.got)} SDT` : "-";
+      const gotSbt = m && (m.status === 1 || m.status === 4);
+      $("sbtBadge").style.display = gotSbt ? "" : "none";
+      $("sbtBadgeText").textContent = `출석 기록 ${last.round}회차가 내 지갑에 저장됐어요 (보유 SBT ${sbtBal}개)`;
+      $("judgeCard").style.display = "";
+      $("judgeList").innerHTML = last.rows.map(x => `<div class="li">${av(x.i, x.status === 3)}<span>스터디원 ${String.fromCharCode(65 + x.i)}${x.i === S.myIdx ? " · 나" : ""}<small>확인 ${x.attestCount}</small></span><span class="chip ${ATT_CHIP[x.status]}">${ATT[x.status]}</span><span class="r ${x.got > 0n ? "ok" : ""}" style="margin-left:8px;min-width:64px">${x.got > 0n ? "+" + fmt(x.got) : "0"}</span></div>`).join("");
     }
-    $("excuseMember").innerHTML = members.map((a, i) => `<option value="${a}">스터디원 ${String.fromCharCode(65 + i)}</option>`).join("");
+    const active = st === 1;
+    if (!active) { $("nextTitle").textContent = st === 3 ? "스터디가 끝났어요" : st === 2 ? "스터디가 취소됐어요" : "아직 시작 전이에요"; $("nextDesc").textContent = st === 0 ? "전원이 예치하면 1회차가 열려요." : "돌려받을 돈은 홈에서 인출해 주세요."; }
+    else if (r === 0 || rd.settled) {
+      if (r < rounds) { $("nextTitle").textContent = `${r + 1}회차를 열 수 있어요`; $("nextDesc").textContent = `모듈 ${r + 1} · ${MODULES[r + 1] || ""}. 제출 마감은 여는 시각부터 ${Math.round(Number(cfg.submitWindow) / 3600)}시간 뒤예요. 누가 열어도 같아요.`; }
+      else { $("nextTitle").textContent = "최종 정산만 남았어요"; $("nextDesc").textContent = "개근한 스터디원에게 개근 배지를 주고, 남은 잔액을 개근자(없으면 전원)에게 나눠요. 그다음 홈에서 인출해요."; }
+    } else { $("nextTitle").textContent = `${r}회차 진행 중`; $("nextDesc").textContent = S.phase === 4 ? "확인 마감이 지났어요. 아래 버튼으로 정산하면 환급·분배·출석 배지가 한 번에 처리돼요." : `확인 마감 ${ts(rd.attestDeadline)} 뒤에 정산할 수 있어요.`; }
+    $("excuseCard").style.display = isAdmin ? "" : "none";
+    if (isAdmin) $("excuseMember").innerHTML = members.map((a, i) => `<option value="${a}">스터디원 ${String.fromCharCode(65 + i)}</option>`).join("");
+    document.querySelector('nav [data-tab="settle"] .dot').classList.toggle("on", active && isMember && r > 0 && !rd.settled && S.phase === 4);
+  }
 
-    snapshot = { members, cfg, r, rd, threshold, rounds, total };
-    await loadEvents();
+  function renderCta() {
+    const tab = document.querySelector("nav button.on").dataset.tab;
+    const cta = $("cta"), b = $("ctaBtn");
+    let text = null, action = null, disabled = false, ghost = false;
+    if (!connected) { text = "지갑 연결"; action = () => $("sheet").classList.add("on"); }
+    else {
+      const { st, r, rd, rounds, phase, myDep, isMember, hasProof, bal, now, depDeadline, total, sdtBal } = S;
+      const active = st === 1, open = r > 0 && !rd.settled;
+      if (tab === "home") {
+        if (!isMember) { text = S.isAdmin && active && (r === 0 || rd.settled) && r < rounds ? `${r + 1}회차 열기` : "스터디원 지갑으로 바꾸기"; action = S.isAdmin && text.includes("열기") ? () => tx("회차 열기", () => escrow.openRound()) : () => $("sheet").classList.add("on"); }
+        else if (st === 0 && !myDep) { text = "예치하러 가기"; action = () => go("deposit"); }
+        else if (st === 0) { text = "다른 스터디원 예치를 기다리는 중"; disabled = true; }
+        else if (active && open && phase <= 2 && !hasProof) { text = "증빙 제출하기"; action = () => go("proof"); }
+        else if (active && open && phase <= 3) { text = "스터디원 증빙 확인하기"; action = () => go("attest"); }
+        else if (active && open && phase === 4) { text = `${r}회차 정산하기`; action = () => tx("회차 정산", () => escrow.settleRound()); }
+        else if (active && r < rounds) { text = `${r + 1}회차 열기`; ghost = r > 0; action = () => tx("회차 열기", () => escrow.openRound()); }
+        else if (active) { text = "최종 정산하기"; action = () => tx("최종 정산", () => escrow.finalizeStudy()); }
+        else if (bal > 0n) { text = `${fmt(bal)} SDT 인출하기`; action = () => tx("인출", () => escrow.withdraw()); }
+        else { text = "끝났어요"; disabled = true; }
+      } else if (tab === "deposit") {
+        if (st !== 0) { text = "예치가 끝났어요"; disabled = true; }
+        else if (!isMember) { text = "스터디원 지갑만 예치할 수 있어요"; disabled = true; }
+        else if (myDep) { text = "예치 완료"; disabled = true; }
+        else if (now > depDeadline) { text = "예치 기한이 지났어요"; disabled = true; }
+        else if (sdtBal < total) { text = `SDT가 ${fmt(total - sdtBal)} 부족해요 · 테스트 SDT 받기`; action = faucet; ghost = true; }
+        else { text = `${fmt(total)} SDT 예치하기`; action = depositFlow; }
+      } else if (tab === "proof") {
+        if (!open || !isMember) { text = "지금은 낼 증빙이 없어요"; disabled = true; }
+        else if (hasProof) { text = "제출 완료 · 확인하러 가기"; ghost = true; action = () => go("attest"); }
+        else if (phase > 2) { text = "제출 기간이 끝났어요"; disabled = true; }
+        else { text = phase === 2 ? "지각으로 증빙 제출" : "증빙 제출"; disabled = !(steps.s1 && steps.s2 && pendingHash); action = () => tx("증빙 제출", () => escrow.submitProof(pendingHash)); }
+      } else if (tab === "attest") {
+        text = null;
+      } else if (tab === "settle") {
+        if (!active) { text = bal > 0n ? `${fmt(bal)} SDT 인출하기` : "정산이 끝났어요"; disabled = bal === 0n; action = () => tx("인출", () => escrow.withdraw()); }
+        else if (open && phase === 4) { text = `${r}회차 정산하기`; action = () => tx("회차 정산", () => escrow.settleRound()); }
+        else if (open) { text = "확인 마감 뒤에 정산할 수 있어요"; disabled = true; }
+        else if (r < rounds) { text = `${r + 1}회차 열기`; ghost = true; action = () => tx("회차 열기", () => escrow.openRound()); }
+        else { text = "최종 정산하기"; action = () => tx("최종 정산", () => escrow.finalizeStudy()); }
+      } else { text = null; }
+    }
+    cta.classList.toggle("hidden", text === null);
+    if (text !== null) { b.textContent = text; b.disabled = disabled; b.className = "btn" + (ghost ? " ghost" : ""); }
+    ctaAction = action;
+    document.querySelector('nav [data-tab="proof"] .dot').classList.toggle("on", connected && S.isMember && S.r > 0 && !S.rd.settled && S.phase <= 2 && !S.hasProof);
+    document.querySelector('nav [data-tab="deposit"] .dot').classList.toggle("on", connected && S.isMember && S.st === 0 && !S.myDep);
+    document.querySelector('nav [data-tab="attest"] .dot').classList.toggle("on", connected && S.isMember && S.r > 0 && !S.rd.settled && S.phase <= 3 && S.mrs.some((x, i) => i !== S.myIdx && x.proofHash !== ethers.ZeroHash && !S.attestedByMe[i]));
   }
 
   async function loadEvents() {
     try {
       const logs = await provider.getLogs({ address: CFG.escrow, fromBlock: 0, toBlock: "latest" });
       const iface = new ethers.Interface(ABI.StudyEscrow);
-      const names = snapshot.members || [];
-      const who = (a) => { const i = names.findIndex(x => x.toLowerCase() === a.toLowerCase()); return i >= 0 ? "스터디원 " + String.fromCharCode(65 + i) : short(a); };
+      const who = (a) => name(S.members || [], a);
       const lines = logs.map(l => {
         const p = iface.parseLog(l); if (!p) return null;
         const a = p.args;
@@ -475,47 +691,58 @@
           default: return `[${l.blockNumber}] ${p.name}`;
         }
       }).filter(Boolean);
-      $("eventLog").textContent = lines.length ? lines.reverse().join("\n") : "아직 이벤트가 없습니다";
-    } catch (e) { $("eventLog").textContent = "이벤트 조회 실패: " + explain(e); }
+      $("eventLog").textContent = lines.length ? lines.reverse().join("\n") : "아직 기록이 없어요";
+    } catch (e) { $("eventLog").textContent = "기록 조회 실패: " + explain(e); }
   }
 
   // ---------- 동작 ----------
-  let pendingHash = null;
+  async function faucet() { await tx("테스트 SDT 받기", () => sdt.faucet(ethers.parseUnits("100000", 18))); }
+  async function depositFlow() {
+    const { allowance, total } = S;
+    if (allowance < total) {
+      const ok = await tx("SDT 사용 승인 (1/2)", () => sdt.approve(CFG.escrow, total));
+      if (!ok) return;
+    }
+    await tx("보증금 예치 (2/2)", () => escrow.deposit());
+  }
+  $("ctaBtn").addEventListener("click", () => { if (ctaAction) ctaAction(); });
+  $("btnFaucet").addEventListener("click", faucet);
+  $("btnCancel").addEventListener("click", () => tx("스터디 취소·환불", () => escrow.cancelStudy()));
+  $("btnWithdraw").addEventListener("click", () => tx("인출", () => escrow.withdraw()));
+  $("btnExcuse").addEventListener("click", () => tx("공결 처리", () => escrow.setExcuse(Number($("excuseRound").value), $("excuseMember").value)));
+  $("step1").addEventListener("click", () => { steps.s1 = !steps.s1; renderProof(); renderCta(); });
+  $("step2").addEventListener("click", () => { steps.s2 = !steps.s2; renderProof(); renderCta(); });
   $("proofFile").addEventListener("change", async (ev) => {
     const f = ev.target.files[0]; if (!f) return;
     const buf = await f.arrayBuffer();
     const h = await crypto.subtle.digest("SHA-256", buf);
     pendingHash = "0x" + Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, "0")).join("");
-    $("proofHash").textContent = `${f.name} · SHA-256 ${pendingHash}`;
-    refresh().catch(() => {});
+    pendingFile = f.name;
+    renderProof(); renderCta();
   });
-  $("btnSubmitProof").onclick = () => tx("증빙 제출", () => escrow.submitProof(pendingHash));
-  $("btnApprove").onclick = () => tx("SDT 승인", () => sdt.approve(CFG.escrow, snapshot.total));
-  $("btnDeposit").onclick = () => tx("보증금 예치", () => escrow.deposit());
-  $("btnFaucet").onclick = () => tx("테스트 SDT 받기", () => sdt.faucet(ethers.parseUnits("100000", 18)));
-  $("btnCancel").onclick = () => tx("스터디 취소", () => escrow.cancelStudy());
-  $("btnWithdraw").onclick = () => tx("인출", () => escrow.withdraw());
-  $("btnOpenRound").onclick = () => tx("회차 열기", () => escrow.openRound());
-  $("btnSettle").onclick = () => tx("회차 정산", () => escrow.settleRound());
-  $("btnFinalize").onclick = () => tx("최종 정산", () => escrow.finalizeStudy());
-  $("btnExcuse").onclick = () => tx("공결 설정", () => escrow.setExcuse(Number($("excuseRound").value), $("excuseMember").value));
-
   document.querySelectorAll("[data-ff]").forEach(b => b.onclick = async () => {
     try {
       await provider.send("evm_increaseTime", [Number(b.dataset.ff)]);
       await provider.send("evm_mine", []);
-      msg(`체인 시각을 ${b.textContent} 앞당겼습니다`, "ok");
+      msg(`체인 시각을 ${b.textContent} 앞당겼어요`, "ok");
       await refresh();
     } catch (e) { msg("시간 조작 실패: " + explain(e), "err"); }
   });
 
-  document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
-    document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
-    document.querySelectorAll("section[id^=tab-]").forEach(s => s.style.display = s.id === "tab-" + b.dataset.tab ? "" : "none");
-  });
+  function go(tab) {
+    document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x.dataset.tab === tab));
+    document.querySelectorAll("section[data-screen]").forEach(s => s.classList.toggle("on", s.dataset.screen === tab));
+    const r = S.r || 0, rd = S.rd;
+    $("topStudy").textContent = tab === "proof" && r > 0 ? `${r}회차 · 모듈 ${r}` : tab === "attest" && r > 0 ? `${r}회차 · 확인 중` :
+      tab === "settle" && r > 0 ? `${r}회차 · ${rd && rd.settled ? "정산 완료" : "진행 중"}` : "이더리움 스터디";
+    if (connected) renderCta(); else renderCta();
+    window.scrollTo({ top: 0 });
+  }
+  document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.tab));
 
   setupDemoAccounts();
-  if (!CFG) msg("web/config.js가 없습니다. 먼저 npm run deploy:local 을 실행해 주세요.", "err");
+  renderCta();
+  if (!CFG) msg("web/config.js가 없어요. 먼저 npm run deploy:local 을 실행해 주세요.", "err");
 })();
 </script>
 </body>

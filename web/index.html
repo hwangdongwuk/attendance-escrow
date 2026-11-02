@@ -605,7 +605,7 @@ nav button .dot.on{display:block}
       const m = h.mine, stn = m ? m.status : 0;
       const label = `${h.round}회차 · 출석 ${h.present}명${h.count[3] ? ` · 결석 ${h.count[3]}명` : ""}${h.count[2] ? ` · 지각 ${h.count[2]}명` : ""}${h.count[4] ? ` · 공결 ${h.count[4]}명` : ""}`;
       const right = !m ? "" : m.got > 0n ? `<span class="r ok">+${fmt(m.got)}</span>` : `<span class="r warn">${ATT[stn]}</span>`;
-      return `<div class="li">${av(h.round - 1, true)}<span>${label}</span>${right}</div>`;
+      return `<div class="li"><span class="av" style="width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ink2);background:#EEF0F3;flex:none">${h.round}</span><span>${label}</span>${right}</div>`;
     }).join("") || `<div class="li"><span class="k">정산된 회차가 생기면 여기에 쌓여요</span></div>`;
     $("btnWithdraw").style.display = bal > 0n ? "" : "none";
     $("btnWithdraw").textContent = `인출 가능 ${fmt(bal)} SDT · 내 지갑으로 보내기`;

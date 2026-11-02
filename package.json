@@ -7,7 +7,8 @@
     "test": "hardhat test",
     "deploy:local": "hardhat run scripts/deploy.js --network localhost",
     "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
-    "verify": "hardhat verify --network sepolia"
+    "verify": "hardhat verify --network sepolia",
+    "deploy:pages": "git subtree push --prefix web origin gh-pages"
   },
   "author": "hwangdongwuk",
   "license": "MIT",

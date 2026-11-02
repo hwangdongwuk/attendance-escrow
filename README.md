@@ -12,7 +12,7 @@
 | contracts/ | StudyEscrow.sol(에스크로), AttendanceSBT.sol(출석 SBT, ERC-5192), MockSDT.sol(테스트 토큰) |
 | test/ | Hardhat 테스트 (목표 18개) |
 | scripts/ | deploy.js (MockSDT → AttendanceSBT → StudyEscrow 배포, web/config.js·abi.js 생성) |
-| web/ | 모바일 웹 프론트. index.html + config.js/abi.js(deploy.js가 생성). main push 시 GitHub Pages로 자동 배포 |
+| web/ | 모바일 웹 프론트. index.html + config.js/abi.js(deploy.js가 생성). `npm run deploy:pages`로 gh-pages 브랜치에 배포 |
 
 ## 실행
 ```
@@ -29,6 +29,6 @@ npm run verify -- <주소> <생성자인자>
 `.env.example`을 복사해 `.env`를 만든다. `.env`는 git에 올라가지 않는다.
 
 ## 프론트 보기
-- 공개 주소: https://hwangdongwuk.github.io/attendance-escrow/
+- 공개 주소: https://hwangdongwuk.github.io/attendance-escrow/ (gh-pages 브랜치 = web/ 폴더. 바꾼 뒤 `npm run deploy:pages`로 다시 올린다)
 - 로컬: `npx hardhat node` 실행 후 `npm run deploy:local`, 이어서 `web/` 폴더를 정적 서버로 연다(예: `cd web && python -m http.server 8080`).
 - 현재 `web/config.js`는 로컬 체인(chainId 31337) 주소다. Sepolia 배포 후 `npm run deploy:sepolia`가 다시 생성한다.

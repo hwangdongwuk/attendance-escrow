@@ -10,7 +10,7 @@
 | 폴더 | 내용 |
 |---|---|
 | contracts/ | StudyEscrow.sol(에스크로), AttendanceSBT.sol(출석 SBT, ERC-5192), MockSDT.sol(테스트 토큰) |
-| test/ | Hardhat 테스트 (목표 18개) |
+| test/ | Hardhat 테스트 28개 (정상 동작 20개, `[알려진 문제]` 현재 동작 기록 8개) |
 | scripts/ | deploy.js (MockSDT → AttendanceSBT → StudyEscrow 배포, web/config.js·abi.js 생성) |
 | web/ | 모바일 웹 프론트. index.html + config.js/abi.js(deploy.js가 생성). `npm run deploy:pages`로 gh-pages 브랜치에 배포 |
 

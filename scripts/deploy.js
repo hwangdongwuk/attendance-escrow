@@ -60,6 +60,7 @@ async function main() {
     network: network.name,
     chainId,
     deployedAt: new Date().toISOString(),
+    deployBlock: (await escrow.deploymentTransaction().wait()).blockNumber, // 프론트의 이벤트 조회 시작 블록
     deployer: deployer.address,
     sdt: await sdt.getAddress(),
     sbt: await sbt.getAddress(),

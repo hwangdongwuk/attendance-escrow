@@ -30,5 +30,7 @@ npm run verify -- <주소> <생성자인자>
 
 ## 프론트 보기
 - 공개 주소: https://hwangdongwuk.github.io/attendance-escrow/ (gh-pages 브랜치 = web/ 폴더. 바꾼 뒤 `npm run deploy:pages`로 다시 올린다)
+- 샘플 화면: 지갑 없이 상황별로 볼 수 있다. 주소 뒤에 `?sc=deposit|proof|attest|ready|settled|finished`, 화면은 `#home|deposit|proof|attest|settle|excuse|log`.
+- 구성: `web/index.html`(구조), `web/styles.css`(디자인), `web/app.js`(동작). 공개 주소에서는 `config.js`가 테스트넷을 가리켜야 지갑 연결이 열린다.
 - 로컬: `npx hardhat node` 실행 후 `npm run deploy:local`, 이어서 `web/` 폴더를 정적 서버로 연다(예: `cd web && python -m http.server 8080`).
 - 현재 `web/config.js`는 로컬 체인(chainId 31337) 주소다. Sepolia 배포 후 `npm run deploy:sepolia`가 다시 생성한다.
